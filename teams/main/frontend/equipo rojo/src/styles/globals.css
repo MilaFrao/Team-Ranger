@@ -1,5 +1,4 @@
-/* Estilos globales adicionales */
-@import 'leaflet/dist/leaflet.css';
+/* Estilos globales adicionales del proyecto SIEGC */
 
 /* Asegurar que los selects hereden el fondo oscuro en todos los navegadores */
 select option {

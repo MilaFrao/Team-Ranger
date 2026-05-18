@@ -1,9 +1,8 @@
-// Componente raíz: gestiona la tab activa y renderiza cada sección
 import { useState } from 'react'
 import { FormProvider } from './context/FormContext'
 import { Header } from './components/Header'
 import { TabNavigation } from './components/TabNavigation'
-import { RegistroDelHecho } from './components/sections/RegistroDelHecho'
+import { RegistroDelHecho } from './components/sections/RegistroDelHechoNew'
 import { NeonPanel } from './components/ui/NeonPanel'
 
 type ActiveTab = 'registro' | 'escena' | 'inteligencia'

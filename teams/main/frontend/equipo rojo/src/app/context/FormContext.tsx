@@ -1,211 +1,89 @@
-// Estado global del formulario: involucrados, ubicación, denunciante, tipo de registro
 import { createContext, useContext, useState, type ReactNode } from 'react'
 
-// ─── Tipo de Registro ─────────────────────────────────────────────
-
-export type TipoRegistro =
-    | 'denuncia_formal'
-    | 'denuncia_anonima'
-    | 'de_oficio'
-    | 'llamada_emergencia'
-    | 'reporte_ciudadano'
-    | 'flagrancia'
-    | ''
-
-export const TIPOS_REGISTRO: { value: TipoRegistro; label: string }[] = [
-  { value: 'denuncia_formal',     label: 'Denuncia Formal' },
-  { value: 'denuncia_anonima',    label: 'Denuncia Anónima' },
-  { value: 'de_oficio',           label: 'De Oficio' },
-  { value: 'llamada_emergencia',  label: 'Llamada de Emergencia' },
-  { value: 'reporte_ciudadano',   label: 'Reporte Ciudadano' },
-  { value: 'flagrancia',          label: 'Flagrancia' },
-]
-
-// Tipos que obligan a registrar datos del denunciante
-export const TIPOS_REQUIEREN_DENUNCIANTE: TipoRegistro[] = [
-  'denuncia_formal',
-  'reporte_ciudadano',
-]
-
-// ─── Tipo de Involucrado ───────────────────────────────────────────
-
-export type TipoInvolucrado =
-    | 'victima'
-    | 'imputado_sospechoso'
-    | 'acusado'
-    | 'testigo'
-    | 'denunciante'
-    | 'querellante'
-    | 'experto_perito'
-    | 'detenido_arrestado'
-
-export const TIPOS_INVOLUCRADO: { value: TipoInvolucrado; label: string }[] = [
-  { value: 'victima',             label: 'Víctima' },
-  { value: 'imputado_sospechoso', label: 'Imputado / Sospechoso' },
-  { value: 'acusado',             label: 'Acusado' },
-  { value: 'testigo',             label: 'Testigo' },
-  { value: 'denunciante',         label: 'Denunciante' },
-  { value: 'querellante',         label: 'Querellante' },
-  { value: 'experto_perito',      label: 'Experto / Perito' },
-  { value: 'detenido_arrestado',  label: 'Detenido / Arrestado' },
-]
-
-// ─── Interfaces ─────────────────────────────────────────────────
-
-export interface Involucrado {
-  id:              number
-  tipoInvolucrado: TipoInvolucrado
-  nombre:          string
-  identificacion:  string
-  nacionalidad:    string
-  telefono:        string
-  direccion:       string
-  foto:            File | null
+interface Victim {
+  id: number
+  nombre: string
+  identificacion: string
+  nacionalidad: string
+  telefono: string
+  direccion: string
+  foto: File|null
 }
 
-export interface FormData {
-  tipoRegistro: TipoRegistro
-
-  involucrados: Involucrado[]
-
-  // ── Clasificación del delito ─────────────────────────────────────
+interface FormData {
   tipoDelito: string
-  subTipo:    string
-
-  descripcion: string
-
-  // ── Ubicación ─────────────────────────────────
-  municipio:          string
-  sector:             string
-  ubicacionDireccion: string
-  referencia:         string
-  lat:                number | null
-  lng:                number | null
-
-  // ── Cronología del reporte ──────────────────────────────────────────────────
-  fechaReporte: string
-  horaReporte:  string
-
+  subTipo: string
   agenteRegistrador: string
-  investigador:      string
-
-  denuncianteNombre:         string
-  denuncianteTelefono:       string
-  denuncianteIdentificacion: string
-  denuncianteNacionalidad:   string
-  denuncianteDireccion:      string
-  denuncianteRelacion:       string
+  investigador: string
+  victims: Victim[]
+  fechaHecho: string
+  horaInicioHecho: string
+  horaFinHecho: string
+  hechoEnCurso:boolean
+  fechaReporte: string
+  horaReporte: string
 }
-
-
 
 interface FormContextType {
-  formData:          FormData
-  updateFormData:    (data: Partial<FormData>) => void
-  addInvolucrado:    () => void
-  removeInvolucrado: (id: number) => void
-  updateInvolucrado: (id: number, data: Partial<Involucrado>) => void
-  resetForm:         () => void
+  formData: FormData
+  updateFormData: (data: Partial<FormData>) => void
+  addVictim: () => void
+  removeVictim: (id: number) => void
+  updateVictim: (id: number, data: Partial<Victim>) => void
+  resetForm: () => void
 }
 
 const FormContext = createContext<FormContextType | undefined>(undefined)
 
-// ─── Estado inicial ────────────────────────────────────────────────
-
-const getInitialFormData = (): FormData => ({
-  tipoRegistro: '',
-
-  involucrados: [
-    {
-      id:              1,
-      tipoInvolucrado: 'victima',
-      nombre:          '',
-      identificacion:  '',
-      nacionalidad:    '',
-      telefono:        '',
-      direccion:       '',
-      foto:            null,
-    },
-  ],
-
+const initialFormData: FormData = {
   tipoDelito: '',
-  subTipo:    '',
-  descripcion: '',
-
-  municipio:          '',
-  sector:             '',
-  ubicacionDireccion: '',
-  referencia:         '',
-  lat:                null,
-  lng:                null,
-
-  fechaReporte: new Date().toISOString().split('T')[0],
-  horaReporte:  new Date().toTimeString().slice(0, 5),
-
-
+  subTipo: '',
   agenteRegistrador: new Date().toLocaleDateString('es-VE'),
-  investigador:      'Agt. Ramírez',
-
-  denuncianteNombre:         '',
-  denuncianteTelefono:       '',
-  denuncianteIdentificacion: '',
-  denuncianteNacionalidad:   '',
-  denuncianteDireccion:      '',
-  denuncianteRelacion:       '',
-})
-
-// ─── Provider ─────────────────────────────────────────────────────────────────
+  investigador: 'Agt. Ramírez',
+  victims: [{ id: 1, nombre: '', identificacion: '', nacionalidad: '', telefono: '', direccion: '', foto:null }],
+  fechaHecho: '',
+  horaInicioHecho: '',
+  horaFinHecho: '',
+  hechoEnCurso: false,
+  fechaReporte: new Date().toISOString().split('T')[0],
+  horaReporte: new Date().toTimeString().slice(0, 5),
+}
 
 export const FormProvider = ({ children }: { children: ReactNode }) => {
-  const [formData, setFormData] = useState<FormData>(getInitialFormData())
+  const [formData, setFormData] = useState<FormData>(initialFormData)
 
   const updateFormData = (data: Partial<FormData>) =>
-      setFormData(prev => ({ ...prev, ...data }))
+    setFormData((prev) => ({ ...prev, ...data }))
 
-  const addInvolucrado = () => {
-    const newId = Math.max(...formData.involucrados.map(v => v.id), 0) + 1
-    setFormData(prev => ({
+  const addVictim = () => {
+    const newId = Math.max(...formData.victims.map((v) => v.id), 0) + 1
+    // @ts-ignore
+    setFormData((prev) => ({
       ...prev,
-      involucrados: [
-        ...prev.involucrados,
-        {
-          id:              newId,
-          tipoInvolucrado: 'victima',
-          nombre:          '',
-          identificacion:  '',
-          nacionalidad:    '',
-          telefono:        '',
-          direccion:       '',
-          foto:            null,
-        },
+      victims: [
+        ...prev.victims,
+        { id: newId, nombre: '', identificacion: '', nacionalidad: '', telefono: '', direccion: '', foto:null },
       ],
     }))
   }
 
-  const removeInvolucrado = (id: number) =>
-      setFormData(prev => ({
-        ...prev,
-        involucrados: prev.involucrados.filter(v => v.id !== id),
-      }))
+  const removeVictim = (id: number) =>
+    setFormData((prev) => ({ ...prev, victims: prev.victims.filter((v) => v.id !== id) }))
 
-  const updateInvolucrado = (id: number, data: Partial<Involucrado>) =>
-      setFormData(prev => ({
-        ...prev,
-        involucrados: prev.involucrados.map(v => (v.id === id ? { ...v, ...data } : v)),
-      }))
+  const updateVictim = (id: number, data: Partial<Victim>) =>
+    setFormData((prev) => ({
+      ...prev,
+      victims: prev.victims.map((v) => (v.id === id ? { ...v, ...data } : v)),
+    }))
 
-  const resetForm = () => setFormData(getInitialFormData())
+  const resetForm = () => setFormData(initialFormData)
 
   return (
-      <FormContext.Provider
-          value={{ formData, updateFormData, addInvolucrado, removeInvolucrado, updateInvolucrado, resetForm }}
-      >
-        {children}
-      </FormContext.Provider>
+    <FormContext.Provider value={{ formData, updateFormData, addVictim, removeVictim, updateVictim, resetForm }}>
+      {children}
+    </FormContext.Provider>
   )
 }
-
-// ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export const useFormContext = () => {
   const ctx = useContext(FormContext)

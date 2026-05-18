@@ -1,8 +1,13 @@
-// Cliente base para comunicación con el backend
+/**
+ * Cliente base para comunicación con el API Gateway (Spring Boot).
+ * URL configurada via VITE_API_URL en .env (default: http://localhost:8080)
+ *
+ * Endpoints esperados del incident-service:
+ *   GET  /api/v1/delitos/categorias     → DelitoTipo[]
+ *   POST /api/v1/incidentes             → Incidente creado
+ */
 
-// Si VITE_API_URL está vacío, las URLs quedan relativas (/api/v1/...)
-// y el proxy de Vite las reenvía a localhost:8080
-const BASE_URL  = import.meta.env.VITE_API_URL ?? ''
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
 const API_PREFIX = '/api/v1'
 
 function getAuthHeader(): Record<string, string> {
@@ -16,7 +21,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
     const errorBody = await response.text().catch(() => '')
     throw new Error(`HTTP ${response.status}: ${errorBody || response.statusText}`)
   }
-  return response.json() as Promise<T>
+  return await response.json() as Promise<T>
 }
 
 export const apiClient = {

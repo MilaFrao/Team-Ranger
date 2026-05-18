@@ -1,4 +1,3 @@
-//Pestañas A / B / C para navegar entre los tres módulos
 type ActiveTab = 'registro' | 'escena' | 'inteligencia'
 
 interface TabNavigationProps {

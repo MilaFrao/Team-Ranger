@@ -1,4 +1,3 @@
-// Barra superior con el logo ZAC, datos del expediente activo y menú de opciones
 import { useState, useEffect, useRef } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { NeonPanel } from './ui/NeonPanel'

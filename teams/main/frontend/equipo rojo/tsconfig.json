@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
-
+    /* Configuración básica */
     "target": "ESNext",
     "useDefineForClassFields": true,
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "module": "ESNext",
     "skipLibCheck": true,
 
+    /* Resolución de módulos (Corrige el error de Tailwind) */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
@@ -14,16 +15,19 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+    /* Strictness */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
+    /* Alias de rutas (Corrige el error de resolve.alias '@') */
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     },
 
+    /* Tipos de Node (Corrige el error de 'path' y '__dirname') */
     "types": ["node", "vite/client"]
   },
   "include": [
