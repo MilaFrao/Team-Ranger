@@ -66,7 +66,12 @@ public class Expediente {
     @OneToMany(mappedBy = "expediente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Victima> victimas = new ArrayList<>();
 
-    @OneToMany(mappedBy = "expediente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "expediente_modus_operandi",
+            joinColumns = @JoinColumn(name = "expediente_id"),
+            inverseJoinColumns = @JoinColumn(name = "modus_operandi_id")
+    )
     private List<ModusOperandi> modusOperandiList = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
