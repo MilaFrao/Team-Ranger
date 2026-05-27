@@ -3,6 +3,7 @@ package com.guardia.core.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -28,7 +29,7 @@ public class ModusOperandi {
     private String nivelConfianza;
 
     @ManyToMany(mappedBy = "modusOperandiList", fetch = FetchType.LAZY)
-    private List<Expediente> expedientes;
+    private List<Expediente> expedientes = new ArrayList<>();
 
     // Methods
     public void analizarPatrones(List<Expediente> expedientes) {
@@ -52,16 +53,4 @@ public class ModusOperandi {
     public void agregarPatron(String patron) {
         this.patronDetectado = patron;
     }
-
-    // Explicit accessors
-    public Long getId() { return this.id; }
-    public String getDescripcionAnalitica() { return this.descripcionAnalitica; }
-    public String getPatronDetectado() { return this.patronDetectado; }
-    public String getNivelConfianza() { return this.nivelConfianza; }
-    public List<Expediente> getExpedientes() { return this.expedientes; }
-
-    public void setDescripcionAnalitica(String descripcionAnalitica) { this.descripcionAnalitica = descripcionAnalitica; }
-    public void setPatronDetectado(String patronDetectado) { this.patronDetectado = patronDetectado; }
-    public void setNivelConfianza(String nivelConfianza) { this.nivelConfianza = nivelConfianza; }
-    public void setExpedientes(List<Expediente> expedientes) { this.expedientes = expedientes; }
 }
