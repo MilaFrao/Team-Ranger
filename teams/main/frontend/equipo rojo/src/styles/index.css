@@ -1,0 +1,8 @@
+/* Importa en orden los 4 archivos CSS del sistema de diseño*/
+@import './fonts.css';
+
+@import './tailwind.css';
+
+@import './theme.css';
+
+@import './globals.css';
