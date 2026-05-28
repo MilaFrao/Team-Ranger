@@ -26,8 +26,8 @@ interface MapaPickerProps {
     initialCoords?: MapaCoordenadas | null
 }
 
-// Centro por defecto: Plaza de la Cultura, Santo Domingo
-const DEFAULT_CENTER: [number, number] = [18.4718609, -69.9512879]
+// Centro por defecto: UDONE
+const DEFAULT_CENTER: [number, number] = [10.995508626789533, -63.86910977871679]
 const DEFAULT_ZOOM = 14
 
 export function MapaPicker({ onChange, initialCoords }: MapaPickerProps) {
