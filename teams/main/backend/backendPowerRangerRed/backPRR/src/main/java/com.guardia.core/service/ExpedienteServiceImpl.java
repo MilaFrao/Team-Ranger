@@ -1,13 +1,34 @@
 package com.guardia.core.service;
 
 import com.guardia.core.dto.request.ExpedienteRequest;
-import com.guardia.core.dto.response.*;
+import com.guardia.core.dto.response.ExpedienteResponse;
+import com.guardia.core.dto.response.UsuarioResponse;
+import com.guardia.core.dto.response.TipoDelitoResponse;
+import com.guardia.core.dto.response.SubtipoDelitoResponse;
+import com.guardia.core.dto.response.DenuncianteResponse;
+import com.guardia.core.dto.response.LocalizacionResponse;
+import com.guardia.core.dto.response.EscenaResponse;
+import com.guardia.core.dto.response.VictimaResponse;
+import com.guardia.core.dto.response.VerificacionHashResponse;
+import com.guardia.core.SelloExpedienteEvent;
 import com.guardia.core.exception.BusinessException;
 import com.guardia.core.exception.ResourceNotFoundException;
-import com.guardia.core.model.*;
+import com.guardia.core.model.Expediente;
+import com.guardia.core.model.Localizacion;
+import com.guardia.core.model.Denunciante;
+import com.guardia.core.model.DelitoEnExpediente;
+import com.guardia.core.model.Victima;
+import com.guardia.core.model.Usuario;
+import com.guardia.core.model.Escena;
 import com.guardia.core.model.enums.EstadoExpediente;
-import com.guardia.core.repository.*;
-import com.guardia.core.service.ExpedienteService;
+import com.guardia.core.repository.ExpedienteRepository;
+import com.guardia.core.repository.UsuarioRepository;
+import com.guardia.core.repository.TipoDelitoRepository;
+import com.guardia.core.repository.SubtipoDelitoRepository;
+import com.guardia.core.repository.LocalizacionRepository;
+import com.guardia.core.repository.DenuncianteRepository;
+import com.guardia.core.repository.EscenaRepository;
+import com.guardia.core.SelloStrategy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +49,8 @@ public class ExpedienteServiceImpl implements ExpedienteService {
     private final LocalizacionRepository localizacionRepository;
     private final DenuncianteRepository denuncianteRepository;
     private final EscenaRepository escenaRepository;
+    private final SelloStrategy selloStrategy;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Override
     public ExpedienteResponse crear(ExpedienteRequest request) {
@@ -169,8 +192,11 @@ public class ExpedienteServiceImpl implements ExpedienteService {
         Usuario agente = usuarioRepository.findById(agenteSelladorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", agenteSelladorId));
 
-        expediente.sellarUsuario(agente);
-        return toResponse(expedienteRepository.save(expediente));
+        selloStrategy.aplicar(expediente, agente, LocalDateTime.now());
+        Expediente guardado = expedienteRepository.save(expediente);
+        eventPublisher.publishEvent(new SelloExpedienteEvent(this, guardado));
+
+        return toResponse(guardado);
     }
 
     @Override
@@ -208,6 +234,23 @@ public class ExpedienteServiceImpl implements ExpedienteService {
     @Override
     public boolean validarDatos(Long id) {
         return findById(id).validarDatos();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public VerificacionHashResponse verificarIntegridad(Long id) {
+        Expediente expediente = findById(id);
+        if (expediente.getHashIntegridad() == null)
+            return new VerificacionHashResponse(id, expediente.getFolio(), false,
+                    "El expediente no ha sido sellado.", null, null);
+
+        String recalculado = selloStrategy.recalcularHash(expediente);
+        boolean integro = expediente.getHashIntegridad().equals(recalculado);
+
+        return new VerificacionHashResponse(id, expediente.getFolio(), integro,
+                integro ? "Integridad verificada: el expediente no fue alterado."
+                        : "⚠ ALERTA: discrepancia detectada. El expediente fue modificado.",
+                expediente.getHashIntegridad(), recalculado);
     }
 
     private Expediente findById(Long id) {
@@ -258,6 +301,6 @@ public class ExpedienteServiceImpl implements ExpedienteService {
         return new ExpedienteResponse(e.getId(), e.getFolio(), e.getEstadoExpediente(),
                 e.getFechaCreacion(), e.getFechaSellado(), e.getDescripcionHecho(),
                 e.getFechaHecho(), creadoPor, selladoPor, tipoDelito, subtipoDelito,
-                denunciante, localizacion, escenas, victimas);
+                denunciante, localizacion, escenas, victimas, e.getHashIntegridad(), e.getAgenteSelladorInfo());
     }
 }

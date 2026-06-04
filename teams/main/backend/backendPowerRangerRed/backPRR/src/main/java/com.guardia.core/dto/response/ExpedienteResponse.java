@@ -20,5 +20,7 @@ public record ExpedienteResponse(
         DenuncianteResponse denunciante,
         LocalizacionResponse localizacion,
         List<EscenaResponse> escenas,
-        List<VictimaResponse> victimas
+        List<VictimaResponse> victimas,
+        String hashIntegridad,
+        String agenteSelladorInfo
 ) {}
