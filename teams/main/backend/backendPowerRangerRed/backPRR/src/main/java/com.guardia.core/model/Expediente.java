@@ -38,6 +38,7 @@ public class Expediente {
     @Column(name = "agente_sellador_info", length = 500)
     private String agenteSelladorInfo;
 
+    @Column(name = "descripcion_hecho", length = 1000)
     private String descripcionHecho;
 
     private LocalDateTime fechaHecho;
@@ -66,19 +67,19 @@ public class Expediente {
     @JoinColumn(name = "denunciante_id")
     private Denunciante denunciante;
 
-    @OneToMany(mappedBy = "expediente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Escena> escenas = new ArrayList<>();
+   /*@OneToMany(mappedBy = "expediente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Escena> escenas = new ArrayList<>();*/
 
     @OneToMany(mappedBy = "expediente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Victima> victimas = new ArrayList<>();
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    /*@ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "expediente_modus_operandi",
             joinColumns = @JoinColumn(name = "expediente_id"),
             inverseJoinColumns = @JoinColumn(name = "modus_operandi_id")
     )
-    private List<ModusOperandi> modusOperandiList = new ArrayList<>();
+    private List<ModusOperandi> modusOperandiList = new ArrayList<>();*/
 
     @Enumerated(EnumType.STRING)
     private EstadoExpediente estadoExpediente = EstadoExpediente.BORRADOR;
@@ -108,12 +109,12 @@ public class Expediente {
         this.estadoExpediente = nuevoEstado;
     }
 
-    public void vincularEscena(Escena escena) {
+    /*public void vincularEscena(Escena escena) {
         if (escena != null) {
             this.escenas.add(escena);
             escena.setExpediente(this);
         }
-    }
+    }*/
 
     public void sellarUsuario(Usuario agente) {
         this.selladoPor = agente;
@@ -164,15 +165,15 @@ public class Expediente {
     public Denunciante getDenunciante() { return this.denunciante; }
     public void setDenunciante(Denunciante denunciante) { this.denunciante = denunciante; }
 
-    public List<Escena> getEscenas() { return this.escenas; }
-    public void setEscenas(List<Escena> escenas) { this.escenas = escenas; }
+    /*public List<Escena> getEscenas() { return this.escenas; }
+    public void setEscenas(List<Escena> escenas) { this.escenas = escenas; }*/
 
     public List<Victima> getVictimas() { return this.victimas; }
     public void setVictimas(List<Victima> victimas) { this.victimas = victimas; }
 
-    public List<ModusOperandi> getModusOperandiList() { return this.modusOperandiList; }
+    /*public List<ModusOperandi> getModusOperandiList() { return this.modusOperandiList; }
     public void setModusOperandiList(List<ModusOperandi> modusOperandiList) { this.modusOperandiList = modusOperandiList; }
-
+*/
     public EstadoExpediente getEstadoExpediente() { return this.estadoExpediente; }
     public void setEstadoExpediente(EstadoExpediente estadoExpediente) { this.estadoExpediente = estadoExpediente; }
 

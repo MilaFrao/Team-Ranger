@@ -7,7 +7,7 @@ import com.guardia.core.dto.response.TipoDelitoResponse;
 import com.guardia.core.dto.response.SubtipoDelitoResponse;
 import com.guardia.core.dto.response.DenuncianteResponse;
 import com.guardia.core.dto.response.LocalizacionResponse;
-import com.guardia.core.dto.response.EscenaResponse;
+//import com.guardia.core.dto.response.EscenaResponse;
 import com.guardia.core.dto.response.VictimaResponse;
 import com.guardia.core.dto.response.VerificacionHashResponse;
 import com.guardia.core.SelloExpedienteEvent;
@@ -19,7 +19,7 @@ import com.guardia.core.model.Denunciante;
 import com.guardia.core.model.DelitoEnExpediente;
 import com.guardia.core.model.Victima;
 import com.guardia.core.model.Usuario;
-import com.guardia.core.model.Escena;
+//import com.guardia.core.model.Escena;
 import com.guardia.core.model.enums.EstadoExpediente;
 import com.guardia.core.repository.ExpedienteRepository;
 import com.guardia.core.repository.UsuarioRepository;
@@ -27,7 +27,7 @@ import com.guardia.core.repository.TipoDelitoRepository;
 import com.guardia.core.repository.SubtipoDelitoRepository;
 import com.guardia.core.repository.LocalizacionRepository;
 import com.guardia.core.repository.DenuncianteRepository;
-import com.guardia.core.repository.EscenaRepository;
+// com.guardia.core.repository.EscenaRepository;
 import com.guardia.core.SelloStrategy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -48,7 +48,7 @@ public class ExpedienteServiceImpl implements ExpedienteService {
     private final SubtipoDelitoRepository subtipoDelitoRepository;
     private final LocalizacionRepository localizacionRepository;
     private final DenuncianteRepository denuncianteRepository;
-    private final EscenaRepository escenaRepository;
+    //private final EscenaRepository escenaRepository;
     private final SelloStrategy selloStrategy;
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
@@ -89,9 +89,9 @@ public class ExpedienteServiceImpl implements ExpedienteService {
         expediente.setDescripcionHecho(request.getDescripcion());
         expediente.setLocalizacion(localizacion);
         expediente.setDenunciante(denunciante);
-        expediente.setEscenas(new ArrayList<>());
+        //expediente.setEscenas(new ArrayList<>());
         expediente.setVictimas(new ArrayList<>());
-        expediente.setModusOperandiList(new ArrayList<>());
+        //expediente.setModusOperandiList(new ArrayList<>());
         expediente.setEstadoExpediente(EstadoExpediente.BORRADOR);
 
         // Mapear delitos (si vienen)
@@ -215,14 +215,14 @@ public class ExpedienteServiceImpl implements ExpedienteService {
         return toResponse(expedienteRepository.save(expediente));
     }
 
-    @Override
+    /*@Override
     public ExpedienteResponse vincularEscena(Long id, Long escenaId) {
         Expediente expediente = findById(id);
         Escena escena = escenaRepository.findById(escenaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Escena", escenaId));
         expediente.vincularEscena(escena);
         return toResponse(expedienteRepository.save(expediente));
-    }
+    }*/
 
     @Override
     public ExpedienteResponse asignarFechaHecho(Long id, String fecha) {
@@ -288,10 +288,10 @@ public class ExpedienteServiceImpl implements ExpedienteService {
                         e.getLocalizacion().getReferencia(), e.getLocalizacion().getLatitud(),
                         e.getLocalizacion().getLongitud(), e.getLocalizacion().obtenerResumenUbicacion());
 
-        List<EscenaResponse> escenas = e.getEscenas() == null ? List.of() :
+        /*List<EscenaResponse> escenas = e.getEscenas() == null ? List.of() :
                 e.getEscenas().stream().map(es -> new EscenaResponse(es.getId(), es.getEstadoChecklist(),
                         es.getInicioProceso(), es.getCierreProceso(), e.getId(), null,
-                        List.of(), List.of())).toList();
+                        List.of(), List.of())).toList();*/
 
         List<VictimaResponse> victimas = e.getVictimas() == null ? List.of() :
                 e.getVictimas().stream().map(v -> new VictimaResponse(v.getId(), v.getNombre(),
@@ -301,6 +301,5 @@ public class ExpedienteServiceImpl implements ExpedienteService {
         return new ExpedienteResponse(e.getId(), e.getFolio(), e.getEstadoExpediente(),
                 e.getFechaCreacion(), e.getFechaSellado(), e.getDescripcionHecho(),
                 e.getFechaHecho(), creadoPor, selladoPor, tipoDelito, subtipoDelito,
-                denunciante, localizacion, escenas, victimas, e.getHashIntegridad(), e.getAgenteSelladorInfo());
-    }
+                denunciante, localizacion, victimas, e.getHashIntegridad(), e.getAgenteSelladorInfo());    }
 }

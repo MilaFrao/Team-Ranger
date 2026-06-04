@@ -20,7 +20,7 @@ public interface ExpedienteService {
     ExpedienteResponse sellar(Long id, Long agenteSelladorId);
     ExpedienteResponse cambiarEstado(Long id, EstadoExpediente nuevoEstado);
     ExpedienteResponse asignarInvestigador(Long id, Long investigadorId);
-    ExpedienteResponse vincularEscena(Long id, Long escenaId);
+    //ExpedienteResponse vincularEscena(Long id, Long escenaId);
     ExpedienteResponse asignarFechaHecho(Long id, String fecha);
     VerificacionHashResponse verificarIntegridad(Long id);
     boolean validarDatos(Long id);
