@@ -19,6 +19,8 @@ public record ExpedienteResponse(
         SubtipoDelitoResponse subtipoDelito,
         DenuncianteResponse denunciante,
         LocalizacionResponse localizacion,
-        List<EscenaResponse> escenas,
-        List<VictimaResponse> victimas
+        //List<EscenaResponse> escenas,
+        List<VictimaResponse> victimas,
+        String hashIntegridad,
+        String agenteSelladorInfo
 ) {}

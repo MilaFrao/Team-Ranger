@@ -3,7 +3,6 @@ package com.guardia.core.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import lombok.*;
 import com.guardia.core.model.enums.EstadoExpediente;
@@ -17,7 +16,6 @@ import com.guardia.core.model.enums.EstadoExpediente;
 @Builder
 public class Expediente {
 
-    // Explicit getters/setters to avoid Lombok dependency issues in some build environments
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,6 +31,12 @@ public class Expediente {
     private LocalDateTime fechaCreacion;
 
     private LocalDateTime fechaSellado;
+
+    @Column(name = "hash_integridad", length = 64)
+    private String hashIntegridad;
+
+    @Column(name = "agente_sellador_info", length = 500)
+    private String agenteSelladorInfo;
 
     private String descripcionHecho;
 
@@ -62,29 +66,19 @@ public class Expediente {
     @JoinColumn(name = "denunciante_id")
     private Denunciante denunciante;
 
+    /*@OneToMany(mappedBy = "expediente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Escena> escenas = new ArrayList<>();*/
+
     @OneToMany(mappedBy = "expediente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Escena> escenas = new ArrayList<>();
+    private List<Victima> victimas = new ArrayList<>();
 
-
-    @OneToMany(mappedBy = "expediente", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @Builder.Default
-    private List<Involucrado> involucrados = new ArrayList<>();
-
-    // Método helper fundamental para asegurar la bidireccionalidad
-    public void vincularInvolucrado(Involucrado involucrado) {
-        if (involucrado != null) {
-            this.involucrados.add(involucrado);
-            involucrado.setExpediente(this); // IMPORTANTE: Le asigna este expediente al involucrado
-        }
-    }
-
-    @ManyToMany(fetch = FetchType.LAZY)
+    /*@ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "expediente_modus_operandi",
             joinColumns = @JoinColumn(name = "expediente_id"),
             inverseJoinColumns = @JoinColumn(name = "modus_operandi_id")
     )
-    private List<ModusOperandi> modusOperandiList = new ArrayList<>();
+    private List<ModusOperandi> modusOperandiList = new ArrayList<>();*/
 
     @Enumerated(EnumType.STRING)
     private EstadoExpediente estadoExpediente = EstadoExpediente.BORRADOR;
@@ -114,12 +108,12 @@ public class Expediente {
         this.estadoExpediente = nuevoEstado;
     }
 
-    public void vincularEscena(Escena escena) {
+    /*public void vincularEscena(Escena escena) {
         if (escena != null) {
             this.escenas.add(escena);
             escena.setExpediente(this);
         }
-    }
+    }*/
 
     public void sellarUsuario(Usuario agente) {
         this.selladoPor = agente;
@@ -131,22 +125,70 @@ public class Expediente {
         this.fechaHecho = fecha;
     }
 
-    public String getNumeroUnico() { return this.numeroUnico; }
+    // Explicit getters/setters to avoid Lombok dependency issues in some build environments
+    public Long getId() { return this.id; }
 
+    public String getFolio() { return this.folio; }
+    public void setFolio(String folio) { this.folio = folio; }
+
+    public String getNumeroUnico() { return this.numeroUnico; }
+    public void setNumeroUnico(String numeroUnico) { this.numeroUnico = numeroUnico; }
+
+    public LocalDateTime getFechaCreacion() { return this.fechaCreacion; }
+    public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
+
+    public LocalDateTime getFechaSellado() { return this.fechaSellado; }
     public void setFechaSellado(LocalDateTime fechaSellado) { this.fechaSellado = fechaSellado; }
 
+    public String getDescripcionHecho() { return this.descripcionHecho; }
+    public void setDescripcionHecho(String descripcionHecho) { this.descripcionHecho = descripcionHecho; }
+
+    public LocalDateTime getFechaHecho() { return this.fechaHecho; }
+    public void setFechaHecho(LocalDateTime fechaHecho) { this.fechaHecho = fechaHecho; }
+
+    public Usuario getCreadoPor() { return this.creadoPor; }
+    public void setCreadoPor(Usuario creadoPor) { this.creadoPor = creadoPor; }
+
+    public Usuario getSelladoPor() { return this.selladoPor; }
     public void setSelladoPor(Usuario selladoPor) { this.selladoPor = selladoPor; }
 
+    public TipoDelito getTipoDelito() { return this.tipoDelito; }
     public void setTipoDelito(TipoDelito tipoDelito) { this.tipoDelito = tipoDelito; }
 
+    public SubtipoDelito getSubtipoDelito() { return this.subtipoDelito; }
     public void setSubtipoDelito(SubtipoDelito subtipoDelito) { this.subtipoDelito = subtipoDelito; }
+
+    public Localizacion getLocalizacion() { return this.localizacion; }
+    public void setLocalizacion(Localizacion localizacion) { this.localizacion = localizacion; }
+
+    public Denunciante getDenunciante() { return this.denunciante; }
+    public void setDenunciante(Denunciante denunciante) { this.denunciante = denunciante; }
+
+    /*public List<Escena> getEscenas() { return this.escenas; }
+    public void setEscenas(List<Escena> escenas) { this.escenas = escenas; }*/
+
+    public List<Victima> getVictimas() { return this.victimas; }
+    public void setVictimas(List<Victima> victimas) { this.victimas = victimas; }
+
+    /*public List<ModusOperandi> getModusOperandiList() { return this.modusOperandiList; }
+    public void setModusOperandiList(List<ModusOperandi> modusOperandiList) { this.modusOperandiList = modusOperandiList; }*/
+
+    public EstadoExpediente getEstadoExpediente() { return this.estadoExpediente; }
+    public void setEstadoExpediente(EstadoExpediente estadoExpediente) { this.estadoExpediente = estadoExpediente; }
 
     public Boolean getEsDenunciaFormal() { return this.esDenunciaFormal; }
     public void setEsDenunciaFormal(Boolean esDenunciaFormal) { this.esDenunciaFormal = esDenunciaFormal; }
 
+    public List<DelitoEnExpediente> getDelitos() { return this.delitos; }
     public void setDelitos(List<DelitoEnExpediente> delitos) { this.delitos = delitos; }
 
     public String getMunicipio() { return this.municipio; }
     public void setMunicipio(String municipio) { this.municipio = municipio; }
+
+    public String getHashIntegridad() { return this.hashIntegridad; }
+    public void setHashIntegridad(String h) { this.hashIntegridad = h; }
+
+    public String getAgenteSelladorInfo() { return this.agenteSelladorInfo; }
+    public void setAgenteSelladorInfo(String i) { this.agenteSelladorInfo = i; }
 
 }

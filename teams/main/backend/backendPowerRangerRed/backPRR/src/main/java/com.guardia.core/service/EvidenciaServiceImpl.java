@@ -1,15 +1,15 @@
-package com.guardia.core.service;
+/*package com.guardia.core.service;
 
-import com.guardia.core.dto.request.EvidenciaRequest;
-import com.guardia.core.dto.response.EvidenciaResponse;
+//import com.guardia.core.dto.request.EvidenciaRequest;
+//import com.guardia.core.dto.response.EvidenciaResponse;
 import com.guardia.core.exception.ResourceNotFoundException;
-import com.guardia.core.model.Escena;
-import com.guardia.core.model.Evidencia;
+//import com.guardia.core.model.Escena;
+//import com.guardia.core.model.Evidencia;
 import com.guardia.core.model.Usuario;
-import com.guardia.core.repository.EscenaRepository;
-import com.guardia.core.repository.EvidenciaRepository;
+//import com.guardia.core.repository.EscenaRepository;
+//import com.guardia.core.repository.EvidenciaRepository;
 import com.guardia.core.repository.UsuarioRepository;
-import com.guardia.core.service.EvidenciaService;
+//import com.guardia.core.service.EvidenciaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -103,4 +103,4 @@ public class EvidenciaServiceImpl implements EvidenciaService {
         return new EvidenciaResponse(e.getId(), e.getNumeroItem(), e.getTipo(),
                 e.getDescripcion(), escenaId);
     }
-}
+}*/
