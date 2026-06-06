@@ -10,8 +10,7 @@ import com.guardia.core.model.Victima;
 import com.guardia.core.model.enums.TipoRol;
 import com.guardia.core.repository.ExpedienteRepository;
 import com.guardia.core.repository.InvolucradoRepository;
-import com.guardia.core.repository.VictimaRepository;
-import com.guardia.core.service.VictimaService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,34 +54,58 @@ public class VictimaServiceImpl implements VictimaService {
     @Override
     @Transactional(readOnly = true)
     public List<VictimaResponse> obtenerTodos() {
-        return victimaRepository.findAll().stream().map(this::toResponse).toList();
+
+        return involucradoRepository
+                .findByRol(TipoRol.VICTIMA)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<VictimaResponse> obtenerPorExpediente(Long expedienteId) {
-        return victimaRepository.findByExpedienteId(expedienteId).stream().map(this::toResponse).toList();
+
+        return involucradoRepository
+                .findByExpedienteIdAndRol(
+                        expedienteId,
+                        TipoRol.VICTIMA
+                )
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
     public VictimaResponse actualizar(Long id, VictimaRequest request) {
-        Victima v = findById(id);
+
+        Involucrado v = findById(id);
+
         v.setNombre(request.nombre());
-        v.setTelefono(request.telefono());
+        v.setNumeroTelefono(request.telefono());
         v.setNacionalidad(request.nacionalidad());
         v.setDireccion(request.direccion());
-        return toResponse(victimaRepository.save(v));
+
+        return toResponse(
+                involucradoRepository.save(v)
+        );
     }
 
     @Override
     public void eliminar(Long id) {
+
         findById(id);
-        victimaRepository.deleteById(id);
+
+        involucradoRepository.deleteById(id);
     }
 
     @Override
     public boolean validarIdentificacion(Long id) {
-        return findById(id).validarIdentificacion();
+
+        Involucrado v = findById(id);
+
+        return v.getIdentificacion() != null
+                && !v.getIdentificacion().isBlank();
     }
 
     private Involucrado findById(Long id) {
