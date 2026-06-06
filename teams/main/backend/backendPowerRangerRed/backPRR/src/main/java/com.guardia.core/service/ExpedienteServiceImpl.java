@@ -319,11 +319,23 @@ public class ExpedienteServiceImpl implements ExpedienteService {
                         e.getLocalizacion().getReferencia(), e.getLocalizacion().getLatitud(),
                         e.getLocalizacion().getLongitud(), e.getLocalizacion().obtenerResumenUbicacion());
 
-        List<EscenaResponse> escenas = e.getEscenas() == null ? List.of() :
-                e.getEscenas().stream().map(es -> new EscenaResponse(es.getId(), es.getEstadoChecklist(),
-                        es.getInicioProceso(), es.getCierreProceso(), e.getId(), null,
-                        List.of(), List.of())).toList();
-
+        List<EscenaResponse> escenas = e.getEscenas() == null
+                ? List.of()
+                : e.getEscenas().stream()
+                .map(es -> new EscenaResponse(
+                        es.getId(),
+                        es.getEstadoChecklist(),
+                        es.getPasoActual() != null
+                        ? es.getPasoActual().name()
+                        : null,
+                        es.getInicioProceso(),
+                        es.getCierreProceso(),
+                        e.getId(),
+                        null,
+                        List.of(),
+                        List.of()
+                ))
+                .toList();
         return new ExpedienteResponse(e.getId(), e.getFolio(), e.getEstadoExpediente(),
                 e.getFechaCreacion(), e.getFechaSellado(), e.getDescripcionHecho(),
                 e.getFechaHecho(), creadoPor, selladoPor, tipoDelito, subtipoDelito,

@@ -12,6 +12,7 @@ import com.guardia.core.model.EscenaChecklist;
 import com.guardia.core.model.Expediente;
 import com.guardia.core.model.Usuario;
 import com.guardia.core.model.enums.PasoChecklist;
+import com.guardia.core.repository.EscenaChecklistRepository;
 import com.guardia.core.repository.EscenaRepository;
 import com.guardia.core.repository.ExpedienteRepository;
 import com.guardia.core.repository.UsuarioRepository;
@@ -32,6 +33,7 @@ public class EscenaServiceImpl implements EscenaService {
     private final EscenaRepository escenaRepository;
     private final ExpedienteRepository expedienteRepository;
     private final UsuarioRepository usuarioRepository;
+    private final EscenaChecklistRepository escenaChecklistRepository;
 
     @Override
     public EscenaResponse crear(EscenaRequest request) {
@@ -63,6 +65,8 @@ public class EscenaServiceImpl implements EscenaService {
                         .paso(PasoChecklist.ASEGURAMIENTO_PERIMETRO)
                         .orden(1)
                         .completado(false)
+                        .fechaInicio(null)
+                        .fechaCierre(null)
                         .escena(escena)
                         .build()
         );
@@ -72,6 +76,8 @@ public class EscenaServiceImpl implements EscenaService {
                         .paso(PasoChecklist.DOCUMENTACION_EVIDENCIA)
                         .orden(2)
                         .completado(false)
+                        .fechaInicio(null)
+                        .fechaCierre(null)
                         .escena(escena)
                         .build()
         );
@@ -81,6 +87,8 @@ public class EscenaServiceImpl implements EscenaService {
                         .paso(PasoChecklist.RECOLECCION_EMBALAJE)
                         .orden(3)
                         .completado(false)
+                        .fechaInicio(null)
+                        .fechaCierre(null)
                         .escena(escena)
                         .build()
         );
@@ -90,11 +98,23 @@ public class EscenaServiceImpl implements EscenaService {
                         .paso(PasoChecklist.LIBERACION_ESCENA)
                         .orden(4)
                         .completado(false)
+                        .fechaInicio(null)
+                        .fechaCierre(null)
                         .escena(escena)
                         .build()
         );
 
         return pasos;
+    }
+
+    private EscenaChecklist obtenerPasoActual(Escena escena) {
+
+        return escenaChecklistRepository
+                .findByEscenaIdOrderByOrden(escena.getId())
+                .stream()
+                .filter(p -> !Boolean.TRUE.equals(p.getCompletado()))
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
@@ -132,55 +152,64 @@ public class EscenaServiceImpl implements EscenaService {
 
         Escena escena = findById(id);
 
-        switch (escena.getPasoActual()) {
+        EscenaChecklist pasoActual =
+                obtenerPasoActual(escena);
 
-            case ASEGURAMIENTO_PERIMETRO ->
+        if (pasoActual == null) {
 
-                    escena.setPasoActual(
-                            PasoChecklist.DOCUMENTACION_EVIDENCIA
-                    );
+            throw new BusinessException(
+                    "Checklist ya completado."
+            );
+        }
 
-            case DOCUMENTACION_EVIDENCIA -> {
+        if (pasoActual.getPaso() ==
+                PasoChecklist.DOCUMENTACION_EVIDENCIA &&
+                (escena.getEvidencias() == null ||
+                        escena.getEvidencias().isEmpty())) {
 
-                if (escena.getEvidencias() == null ||
-                        escena.getEvidencias().isEmpty()) {
+            throw new BusinessException(
+                    "Debe registrar al menos una evidencia antes de continuar."
+            );
+        }
 
-                    throw new BusinessException(
-                            "Debe registrar al menos una evidencia."
-                    );
-                }
+        pasoActual.setCompletado(true);
+        pasoActual.setFechaCierre(LocalDateTime.now());
 
-                escena.setPasoActual(
-                        PasoChecklist.RECOLECCION_EMBALAJE
-                );
-            }
+        escenaChecklistRepository.save(pasoActual);
 
-            case RECOLECCION_EMBALAJE ->
+        EscenaChecklist siguientePaso =
+                obtenerPasoActual(escena);
 
-                    escena.setPasoActual(
-                            PasoChecklist.LIBERACION_ESCENA
-                    );
+        if (siguientePaso != null) {
 
-            case LIBERACION_ESCENA -> {
+            if (siguientePaso.getFechaInicio() == null) {
 
-                escena.setPasoActual(
-                        PasoChecklist.COMPLETADO
-                );
-
-                escena.setEstadoChecklist(
-                        "CERRADO"
-                );
-
-                escena.setCierreProceso(
+                siguientePaso.setFechaInicio(
                         LocalDateTime.now()
                 );
+
+                escenaChecklistRepository.save(
+                        siguientePaso
+                );
             }
 
-            case COMPLETADO ->
-                    throw new BusinessException(
-                            "Checklist ya completado."
-                    );
+            escena.setPasoActual(
+                    siguientePaso.getPaso()
+            );
+
+        } else {
+
+            escena.setPasoActual(null);
+
+            escena.setEstadoChecklist(
+                    "COMPLETADO"
+            );
+
+            escena.setCierreProceso(
+                    LocalDateTime.now()
+            );
         }
+
 
         return toResponse(
                 escenaRepository.save(escena)
@@ -189,11 +218,28 @@ public class EscenaServiceImpl implements EscenaService {
 
     @Override
     public EscenaResponse iniciarChecklist(Long id) {
+
         Escena escena = findById(id);
-        if ("INICIADO".equals(escena.getEstadoChecklist()) || "CERRADO".equals(escena.getEstadoChecklist()))
-            throw new BusinessException("La escena ya fue iniciada o cerrada.");
-        escena.iniciarChecklist();
+        if ("INICIADO".equals(escena.getEstadoChecklist()) || "COMPLETADO".equals(escena.getEstadoChecklist())) {
+            throw new BusinessException(
+                    "La escena ya fue iniciada o completada."
+            );
+        }
+
+        EscenaChecklist primerPaso =
+                obtenerPasoActual(escena);
+
+        if(primerPaso != null){
+
+            primerPaso.setFechaInicio(
+                    LocalDateTime.now()
+            );
+
+            escenaChecklistRepository.save(primerPaso);
+        }
+
         return toResponse(escenaRepository.save(escena));
+
     }
 
     @Override
