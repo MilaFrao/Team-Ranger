@@ -7,13 +7,13 @@ import java.util.List;
 
 @Data
 public class InvolucradosRequest {
-    @NotBlank(message = "El nombre de la victima es obligatorio")
+
+    @NotBlank
     private String nombre;
 
-    @NotBlank(message = "El apellido de la victima es obligatorio")
     private String apellido;
 
-    @NotBlank(message = "La cedula de la victima es obligatoria")
+    @NotBlank
     private String cedula;
 
     private String telefono;
@@ -24,8 +24,7 @@ public class InvolucradosRequest {
 
     private String fotografiaURL;
 
-    private List<TipoRol> Rol;
+    private TipoRol rol;
 
-
-
+    private String relacionConHecho;
 }
