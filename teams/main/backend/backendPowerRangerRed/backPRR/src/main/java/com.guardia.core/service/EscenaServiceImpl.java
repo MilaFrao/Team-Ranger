@@ -4,6 +4,7 @@ import com.guardia.core.dto.request.EscenaRequest;
 import com.guardia.core.dto.response.EscenaResponse;
 import com.guardia.core.dto.response.EscenaNegativaResponse;
 import com.guardia.core.dto.response.EvidenciaResponse;
+import com.guardia.core.dto.response.EscenaChecklistResponse;
 import com.guardia.core.dto.response.UsuarioResponse;
 import com.guardia.core.exception.BusinessException;
 import com.guardia.core.exception.ResourceNotFoundException;
@@ -149,68 +150,44 @@ public class EscenaServiceImpl implements EscenaService {
 
     @Override
     public EscenaResponse avanzarPaso(Long id) {
-
         Escena escena = findById(id);
-
         EscenaChecklist pasoActual =
                 obtenerPasoActual(escena);
-
         if (pasoActual == null) {
-
-            throw new BusinessException(
-                    "Checklist ya completado."
-            );
+            throw new BusinessException("Checklist ya completado.");
         }
+        if (pasoActual.getPaso() == PasoChecklist.DOCUMENTACION_EVIDENCIA) {
 
-        if (pasoActual.getPaso() ==
-                PasoChecklist.DOCUMENTACION_EVIDENCIA &&
-                (escena.getEvidencias() == null ||
-                        escena.getEvidencias().isEmpty())) {
+            if (escena.getEvidencias() == null || escena.getEvidencias().isEmpty()) {
+                throw new BusinessException("Debe registrar al menos una evidencia antes de continuar.");
+            }
 
-            throw new BusinessException(
-                    "Debe registrar al menos una evidencia antes de continuar."
-            );
+            boolean tieneNegativas = escena.getEscenasNegativas() != null
+                    && !escena.getEscenasNegativas().isEmpty();
+            if (!tieneNegativas) {
+                throw new BusinessException(
+                        "Debe registrar al menos un elemento de escena negativa, " +
+                                "o marcar explícitamente 'sin elementos negativos a reportar'."
+                );
+            }
         }
 
         pasoActual.setCompletado(true);
-        pasoActual.setFechaCierre(LocalDateTime.now());
-
+        escena.registrarTimestampPaso(pasoActual, true);
         escenaChecklistRepository.save(pasoActual);
-
         EscenaChecklist siguientePaso =
                 obtenerPasoActual(escena);
-
         if (siguientePaso != null) {
-
             if (siguientePaso.getFechaInicio() == null) {
-
-                siguientePaso.setFechaInicio(
-                        LocalDateTime.now()
-                );
-
-                escenaChecklistRepository.save(
-                        siguientePaso
-                );
+                escena.registrarTimestampPaso(siguientePaso, false);
+                escenaChecklistRepository.save(siguientePaso);
             }
-
-            escena.setPasoActual(
-                    siguientePaso.getPaso()
-            );
-
+            escena.setPasoActual(siguientePaso.getPaso());
         } else {
-
             escena.setPasoActual(null);
-
-            escena.setEstadoChecklist(
-                    "COMPLETADO"
-            );
-
-            escena.setCierreProceso(
-                    LocalDateTime.now()
-            );
+            escena.setEstadoChecklist("COMPLETADO");
+            escena.setCierreProceso(LocalDateTime.now());
         }
-
-
         return toResponse(
                 escenaRepository.save(escena)
         );
@@ -218,28 +195,17 @@ public class EscenaServiceImpl implements EscenaService {
 
     @Override
     public EscenaResponse iniciarChecklist(Long id) {
-
         Escena escena = findById(id);
         if ("INICIADO".equals(escena.getEstadoChecklist()) || "COMPLETADO".equals(escena.getEstadoChecklist())) {
-            throw new BusinessException(
-                    "La escena ya fue iniciada o completada."
-            );
+            throw new BusinessException("La escena ya fue iniciada o completada.");
         }
-
-        EscenaChecklist primerPaso =
-                obtenerPasoActual(escena);
-
+        escena.iniciarChecklist();
+        EscenaChecklist primerPaso = obtenerPasoActual(escena);
         if(primerPaso != null){
-
-            primerPaso.setFechaInicio(
-                    LocalDateTime.now()
-            );
-
+            primerPaso.setFechaInicio(LocalDateTime.now());
             escenaChecklistRepository.save(primerPaso);
         }
-
         return toResponse(escenaRepository.save(escena));
-
     }
 
     @Override
@@ -279,14 +245,23 @@ public class EscenaServiceImpl implements EscenaService {
 
         List<EvidenciaResponse> evidencias = e.getEvidencias() == null ? List.of() :
                 e.getEvidencias().stream()
-                        .map(ev -> new EvidenciaResponse(ev.getId(), ev.getNumeroItem(),
-                                ev.getTipo(), ev.getDescripcion(), e.getId()))
-                        .toList();
+                .map(ev -> new EvidenciaResponse(
+                        ev.getId(),
+                        ev.getNumeroItem(),
+                        ev.getTipo(),
+                        ev.getDescripcion(),
+                        e.getId(),
+                        ev.getHashIntegridad(),
+                        ev.getTimestampRegistro(),
+                        ev.getInvestigador() != null ? ev.getInvestigador().getNombre() : null
+                ))
+                .toList();
+
 
         List<EscenaNegativaResponse> negativas = e.getEscenasNegativas() == null ? List.of() :
                 e.getEscenasNegativas().stream()
                         .map(en -> new EscenaNegativaResponse(en.getId(), en.getElementoBuscado(),
-                                en.getAreaInspeccionada(), en.getResultado(), en.getObservacion(), e.getId()))
+                                en.getAreaInspeccionada(), en.getResultado(), en.getObservacion(), e.getId(), en.getSinElementosNegativos()))
                         .toList();
 
         return new EscenaResponse(
@@ -302,5 +277,22 @@ public class EscenaServiceImpl implements EscenaService {
                 evidencias,
                 negativas
         );
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public List<EscenaChecklistResponse> obtenerChecklist(Long id) {
+        findById(id);
+        return escenaChecklistRepository
+                .findByEscenaIdOrderByOrden(id)
+                .stream()
+                .map(p -> new EscenaChecklistResponse(
+                        p.getId(),
+                        p.getPaso(),
+                        p.getOrden(),
+                        p.getCompletado(),
+                        p.getFechaInicio(),
+                        p.getFechaCierre()
+                ))
+                .toList();
     }
 }

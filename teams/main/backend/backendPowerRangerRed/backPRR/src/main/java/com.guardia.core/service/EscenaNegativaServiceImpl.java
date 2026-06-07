@@ -2,6 +2,7 @@ package com.guardia.core.service;
 
 import com.guardia.core.dto.request.EscenaNegativaRequest;
 import com.guardia.core.dto.response.EscenaNegativaResponse;
+import com.guardia.core.exception.BusinessException;
 import com.guardia.core.exception.ResourceNotFoundException;
 import com.guardia.core.model.Escena;
 import com.guardia.core.model.EscenaNegativa;
@@ -28,11 +29,16 @@ public class EscenaNegativaServiceImpl implements EscenaNegativaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Escena", request.escenaId()));
 
         EscenaNegativa escenaNegativa = new EscenaNegativa();
-        escenaNegativa.setElementoBuscado(request.elementoBuscado());
-        escenaNegativa.setAreaInspeccionada(request.areaInspeccionada());
-        escenaNegativa.setResultado(request.resultado());
-        escenaNegativa.setObservacion(request.observacion());
         escenaNegativa.setEscena(escena);
+
+        if (Boolean.TRUE.equals(request.sinElementosNegativos())) {
+            escenaNegativa.marcarSinElementosNegativos();
+        } else {
+            escenaNegativa.setElementoBuscado(request.elementoBuscado());
+            escenaNegativa.setAreaInspeccionada(request.areaInspeccionada());
+            escenaNegativa.setResultado(request.resultado());
+            escenaNegativa.setObservacion(request.observacion());
+        }
 
         return toResponse(escenaNegativaRepository.save(escenaNegativa));
     }
@@ -67,8 +73,9 @@ public class EscenaNegativaServiceImpl implements EscenaNegativaService {
 
     @Override
     public void eliminar(Long id) {
-        findById(id);
-        escenaNegativaRepository.deleteById(id);
+        throw new BusinessException(
+                "Los registros de escena negativa no pueden eliminarse una vez guardados."
+        );
     }
 
     @Override
@@ -98,6 +105,6 @@ public class EscenaNegativaServiceImpl implements EscenaNegativaService {
     public EscenaNegativaResponse toResponse(EscenaNegativa en) {
         Long escenaId = en.getEscena() != null ? en.getEscena().getId() : null;
         return new EscenaNegativaResponse(en.getId(), en.getElementoBuscado(),
-                en.getAreaInspeccionada(), en.getResultado(), en.getObservacion(), escenaId);
+                en.getAreaInspeccionada(), en.getResultado(), en.getObservacion(), escenaId, en.getSinElementosNegativos());
     }
 }

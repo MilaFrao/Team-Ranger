@@ -6,5 +6,6 @@ public record EscenaNegativaResponse(
         String areaInspeccionada,
         String resultado,
         String observacion,
-        Long escenaId
+        Long escenaId,
+        Boolean sinElementosNegativos
 ) {}

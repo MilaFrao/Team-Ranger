@@ -15,4 +15,5 @@ public interface EvidenciaService {
     EvidenciaResponse asignarNumero(Long id, String numero);
     EvidenciaResponse firmarLevantamiento(Long id, Long investigadorId);
     boolean validarIntegridad(Long id);
+    boolean verificarHash(Long id);
 }

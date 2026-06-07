@@ -28,11 +28,13 @@ public class EscenaNegativa {
     @Column
     private String observacion;
 
+    @Column(name = "sin_elementos_negativos", nullable = false)
+    private Boolean sinElementosNegativos = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "escena_id")
     private Escena escena;
 
-    // Methods
     public void registrarElementoBuscado(String elemento) {
         this.elementoBuscado = elemento;
     }
@@ -54,5 +56,13 @@ public class EscenaNegativa {
     public boolean validarRegistro() {
         return this.elementoBuscado != null && !this.elementoBuscado.isBlank()
                 && this.areaInspeccionada != null && !this.areaInspeccionada.isBlank();
+    }
+
+    public void marcarSinElementosNegativos() {
+        this.sinElementosNegativos = true;
+        this.elementoBuscado = "SIN_ELEMENTOS_NEGATIVOS";
+        this.areaInspeccionada = "N/A";
+        this.resultado = "SIN_HALLAZGOS";
+        this.observacion = "El investigador confirmó que no hay elementos negativos a reportar.";
     }
 }
