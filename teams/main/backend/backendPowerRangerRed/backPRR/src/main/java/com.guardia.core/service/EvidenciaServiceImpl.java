@@ -1,5 +1,5 @@
 package com.guardia.core.service;
-
+import com.guardia.core.HashStrategy;
 import com.guardia.core.dto.request.EvidenciaRequest;
 import com.guardia.core.dto.response.EvidenciaResponse;
 import com.guardia.core.exception.ResourceNotFoundException;
@@ -24,19 +24,38 @@ public class EvidenciaServiceImpl implements EvidenciaService {
     private final EvidenciaRepository evidenciaRepository;
     private final EscenaRepository escenaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final HashStrategy hashStrategy;
 
     @Override
     public EvidenciaResponse crear(EvidenciaRequest request) {
-        Escena escena = escenaRepository.findById(request.escenaId())
+        Escena escena = escenaRepository.findByIdWithInvestigador(request.escenaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Escena", request.escenaId()));
 
+        long total = evidenciaRepository.countByEscenaId(request.escenaId());
+        String numeroItem = String.format("EV-%03d", total + 1);
+
+        Usuario investigador = escena.getLevantadaPor() != null
+                ? usuarioRepository.findById(escena.getLevantadaPor().getId())
+                  .orElse(null)
+                : null;
+
         Evidencia evidencia = new Evidencia();
-        evidencia.setNumeroItem(request.numeroItem());
-        evidencia.setTipo(request.tipo());
-        evidencia.setDescripcion(request.descripcion());
-        evidencia.setEscena(escena);
+        evidencia.registrarEvidencia(
+                escena,
+                request.tipo(),
+                request.descripcion(),
+                investigador,
+                hashStrategy
+        );
+        evidencia.asignarNumero(numeroItem);
 
         return toResponse(evidenciaRepository.save(evidencia));
+    }
+
+    public boolean verificarHash(Long id) {
+        Evidencia evidencia = evidenciaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Evidencia", id));
+        return evidencia.verificarHash(hashStrategy);
     }
 
     @Override
@@ -98,9 +117,18 @@ public class EvidenciaServiceImpl implements EvidenciaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Evidencia", id));
     }
 
-    public EvidenciaResponse toResponse(Evidencia e) {
-        Long escenaId = e.getEscena() != null ? e.getEscena().getId() : null;
-        return new EvidenciaResponse(e.getId(), e.getNumeroItem(), e.getTipo(),
-                e.getDescripcion(), escenaId);
+    private EvidenciaResponse toResponse(Evidencia e) {
+        String investigadorNombre = e.getInvestigador() != null
+                ? e.getInvestigador().getNombre() : null;
+        return new EvidenciaResponse(
+                e.getId(),
+                e.getNumeroItem(),
+                e.getTipo(),
+                e.getDescripcion(),
+                e.getEscena() != null ? e.getEscena().getId() : null,
+                e.getHashIntegridad(),
+                e.getTimestampRegistro(),
+                investigadorNombre
+        );
     }
 }

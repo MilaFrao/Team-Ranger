@@ -7,6 +7,7 @@ import lombok.*;
 import java.util.ArrayList;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Comparator;
 
 @Entity
 @Table(name = "escena")
@@ -64,12 +65,27 @@ public class Escena {
         }
     }
 
-    public void registrarTimestampPaso() {
-        // Puede registrar en log de auditoría o campo adicional según necesidad
+    public void registrarTimestampPaso(EscenaChecklist paso, boolean esCierre) {
+        if (paso == null) return;
+        if (esCierre) {
+            paso.setFechaCierre(LocalDateTime.now());
+        } else {
+            paso.setFechaInicio(LocalDateTime.now());
+        }
     }
 
     public boolean validarSecuencia() {
-        return this.estadoChecklist != null && this.inicioProceso != null;
+        if (checklist == null || checklist.isEmpty()) return false;
+        List<EscenaChecklist> ordenados = checklist.stream()
+                .sorted(Comparator.comparingInt(EscenaChecklist::getOrden))
+                .toList();
+        for (int i = 1; i < ordenados.size(); i++) {
+            if (Boolean.TRUE.equals(ordenados.get(i).getCompletado()) &&
+                    !Boolean.TRUE.equals(ordenados.get(i - 1).getCompletado())) {
+                return false; // hay un paso completado con anterior incompleto
+            }
+        }
+        return true;
     }
 
     public void cerrar() {

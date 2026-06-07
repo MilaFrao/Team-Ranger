@@ -10,4 +10,5 @@ import java.util.List;
 public interface EscenaNegativaRepository extends JpaRepository<EscenaNegativa, Long> {
     List<EscenaNegativa> findByEscenaId(Long escenaId);
     List<EscenaNegativa> findByResultado(String resultado);
+    boolean existsByEscenaId(Long escenaId);
 }

@@ -1,4 +1,5 @@
 package com.guardia.core.model;
+import com.guardia.core.HashStrategy;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -31,12 +32,31 @@ public class Evidencia {
     @JoinColumn(name = "escena_id")
     private Escena escena;
 
+    @Column(name = "hash_integridad")
+    private String hashIntegridad;
+
+    @Column(name = "timestamp_registro")
+    private LocalDateTime timestampRegistro;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "investigador_id")
+    private Usuario investigador;
+
     // Methods
-    public Evidencia registrarEvidencia(Escena escena, String tipo, String descripcion) {
+    public Evidencia registrarEvidencia(Escena escena, String tipo, String descripcion, Usuario investigador, HashStrategy hashStrategy) {
         this.escena = escena;
         this.tipo = tipo;
         this.descripcion = descripcion;
+        this.timestampRegistro = LocalDateTime.now();
+        String contenido = tipo + "|" + descripcion;
+        this.hashIntegridad = hashStrategy.calcular(contenido);
         return this;
+    }
+
+    public boolean verificarHash(HashStrategy hashStrategy) {
+        if (this.hashIntegridad == null) return false;
+        String contenido = this.tipo + "|" + this.descripcion;
+        return this.hashIntegridad.equals(hashStrategy.calcular(contenido));
     }
 
     public void asignarNumero(String numero) {

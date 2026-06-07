@@ -14,7 +14,8 @@ public record EscenaNegativaRequest(
         String observacion,
 
         @NotNull(message = "La escena es obligatoria")
-        Long escenaId
+        Long escenaId,
+        Boolean sinElementosNegativos
 ) {
     public String getElementoBuscado() { return this.elementoBuscado; }
     public String getAreaInspeccionada() { return this.areaInspeccionada; }

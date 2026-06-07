@@ -71,4 +71,13 @@ public class EvidenciaController {
     public ResponseEntity<ApiResponse<Boolean>> validarIntegridad(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(evidenciaService.validarIntegridad(id)));
     }
+
+    @PostMapping("/{id}/verificar-hash")
+    public ResponseEntity<ApiResponse<Boolean>> verificarHash(@PathVariable Long id) {
+        boolean valido = evidenciaService.verificarHash(id);
+        String mensaje = valido
+                ? "Integridad verificada: el hash coincide."
+                : "ALERTA: discrepancia de integridad detectada.";
+        return ResponseEntity.ok(ApiResponse.ok(mensaje, valido));
+    }
 }

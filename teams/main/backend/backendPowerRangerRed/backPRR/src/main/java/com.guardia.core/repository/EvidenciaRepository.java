@@ -12,4 +12,5 @@ public interface EvidenciaRepository extends JpaRepository<Evidencia, Long> {
     List<Evidencia> findByEscenaId(Long escenaId);
     Optional<Evidencia> findByNumeroItem(String numeroItem);
     List<Evidencia> findByTipo(String tipo);
+    long countByEscenaId(Long escenaId);
 }

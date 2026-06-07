@@ -2,6 +2,7 @@ package com.guardia.core.controller;
 
 import com.guardia.core.dto.request.EscenaRequest;
 import com.guardia.core.dto.response.EscenaResponse;
+import com.guardia.core.dto.response.EscenaChecklistResponse;
 import com.guardia.core.exception.ApiResponse;
 import com.guardia.core.service.EscenaService;
 import jakarta.validation.Valid;
@@ -83,5 +84,11 @@ public class EscenaController {
                 )
         );
     }
-
+    @GetMapping("/{id}/checklist")
+    public ResponseEntity<ApiResponse<List<EscenaChecklistResponse>>> obtenerChecklist(
+            @PathVariable Long id) {
+        return ResponseEntity.ok(
+                ApiResponse.ok(escenaService.obtenerChecklist(id))
+        );
+    }
 }
