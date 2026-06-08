@@ -2,22 +2,21 @@ package com.guardia.core.service;
 
 import com.guardia.core.dto.request.ExpedienteRequest;
 import com.guardia.core.dto.response.ExpedienteResponse;
-import com.guardia.core.dto.response.UsuarioResponse;
-import com.guardia.core.dto.response.TipoDelitoResponse;
-import com.guardia.core.dto.response.SubtipoDelitoResponse;
-import com.guardia.core.dto.response.DenuncianteResponse;
+import com.guardia.core.dto.response.ExpedienteActivoResponse;
 import com.guardia.core.dto.response.LocalizacionResponse;
+import com.guardia.core.dto.response.SubtipoDelitoResponse;
+import com.guardia.core.dto.response.TipoDelitoResponse;
 //import com.guardia.core.dto.response.EscenaResponse;
+import com.guardia.core.dto.response.UsuarioResponse;
 import com.guardia.core.dto.response.VictimaResponse;
 import com.guardia.core.dto.response.VerificacionHashResponse;
+import com.guardia.core.dto.response.DenuncianteResponse;
 import com.guardia.core.SelloExpedienteEvent;
 import com.guardia.core.exception.BusinessException;
 import com.guardia.core.exception.ResourceNotFoundException;
 import com.guardia.core.model.Expediente;
 import com.guardia.core.model.Localizacion;
-import com.guardia.core.model.Denunciante;
 import com.guardia.core.model.DelitoEnExpediente;
-import com.guardia.core.model.Victima;
 import com.guardia.core.model.Usuario;
 //import com.guardia.core.model.Escena;
 import com.guardia.core.model.enums.EstadoExpediente;
@@ -36,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -146,12 +146,6 @@ public class ExpedienteServiceImpl implements ExpedienteService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ExpedienteResponse> obtenerPorEstado(EstadoExpediente estado) {
-        return expedienteRepository.findByEstadoExpediente(estado).stream().map(this::toResponse).toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public List<ExpedienteResponse> obtenerPorCreador(Long usuarioId) {
         return expedienteRepository.findByCreadoPorId(usuarioId).stream().map(this::toResponse).toList();
     }
@@ -251,6 +245,43 @@ public class ExpedienteServiceImpl implements ExpedienteService {
                 integro ? "Integridad verificada: el expediente no fue alterado."
                         : "⚠ ALERTA: discrepancia detectada. El expediente fue modificado.",
                 expediente.getHashIntegridad(), recalculado);
+    }
+
+
+    @Override
+    public List<ExpedienteActivoResponse> obtenerExpedientesActivos() {
+        // Aquí puedes usar el mismo método de búsqueda filtrando por el enum que consideres activo
+        List<Expediente> expedientes = expedienteRepository.findByEstatus(EstadoExpediente.INVESTIGACION_ACTIVA);
+
+        return expedientes.stream()
+                .map(this::convertirAActivoResponse) // 🎯 Usa el convertidor de ExpedienteActivoResponse
+                .collect(Collectors.toList());
+    }
+
+
+    // 📄 Tu método de conversión debe devolver ExpedienteActivoResponse
+    private ExpedienteActivoResponse convertirAActivoResponse(Expediente entidad) {
+        ExpedienteActivoResponse response = new ExpedienteActivoResponse();
+        response.setId(entidad.getId());
+        response.setFolioCOPP(entidad.getFolio());
+        response.setTipoDelito(entidad.getTipoDelito());
+        response.setSubtipoDelito(entidad.getSubtipoDelito());
+        response.setFechaHecho(entidad.getFechaHecho());
+        response.setFechaCreacion(entidad.getFechaCreacion());
+        response.setEstatus(entidad.getEstadoExpediente()); // Ojo aquí con los Enums Front/Back
+        response.setMunicipio(entidad.getMunicipio());
+        response.setSector(entidad.getSector());
+        return response;
+    }
+    @Override
+    public List<ExpedienteResponse> obtenerPorEstado(EstadoExpediente estadoExpediente) {
+        // 1. Buscamos en la base de datos usando el método seguro con @Query
+        List<Expediente> expedientes = expedienteRepository.findByEstatus(estadoExpediente);
+
+        // 2. Mapeamos de forma limpia usando tu función toResponse
+        return expedientes.stream()
+                .map(this::toResponse) // 🎯 Aquí llamamos a tu método convertidor
+                .collect(Collectors.toList());
     }
 
     private Expediente findById(Long id) {

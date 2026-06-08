@@ -1,6 +1,7 @@
 package com.guardia.core.dto.response;
 
 import com.guardia.core.model.enums.EstadoExpediente;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;

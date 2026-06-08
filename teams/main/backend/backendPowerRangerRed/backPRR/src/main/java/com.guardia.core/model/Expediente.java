@@ -18,7 +18,7 @@ public class Expediente {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
     // Folio visible al usuario
     @Column(unique = true)
@@ -38,6 +38,7 @@ public class Expediente {
     @Column(name = "agente_sellador_info", length = 500)
     private String agenteSelladorInfo;
 
+    @Column(name = "descripcion_hecho", columnDefinition = "TEXT")
     private String descripcionHecho;
 
     private LocalDateTime fechaHecho;
@@ -121,12 +122,24 @@ public class Expediente {
         this.estadoExpediente = EstadoExpediente.PROCESADO_Y_SELLADO;
     }
 
+    @OneToMany(mappedBy = "expediente", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Involucrado> involucrados = new ArrayList<>();
+
+    // 🛠️ AGREGA ESTE MÉTODO PARA SOLUCIONAR EL ERROR:
+    public void vincularInvolucrado(Involucrado involucrado) {
+        if (involucrados == null) {
+            this.involucrados = new ArrayList<>();
+        }
+        this.involucrados.add(involucrado);
+        involucrado.setExpediente(this); // Vincula también el involucrado al expediente actual
+    }
+
     public void asignarFechaHecho(LocalDateTime fecha) {
         this.fechaHecho = fecha;
     }
 
     // Explicit getters/setters to avoid Lombok dependency issues in some build environments
-    public Long getId() { return this.id; }
+    public long getId() { return this.id; }
 
     public String getFolio() { return this.folio; }
     public void setFolio(String folio) { this.folio = folio; }
@@ -191,4 +204,11 @@ public class Expediente {
     public String getAgenteSelladorInfo() { return this.agenteSelladorInfo; }
     public void setAgenteSelladorInfo(String i) { this.agenteSelladorInfo = i; }
 
+    /*public String getInvestigadorAsignado() {
+
+    }
+
+    public boolean isTieneAlertaPatron() {
+
+    }*/
 }
