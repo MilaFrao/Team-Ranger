@@ -4,6 +4,7 @@ import com.guardia.core.dto.request.ExpedienteRequest;
 import com.guardia.core.dto.response.ExpedienteResponse;
 import com.guardia.core.exception.ApiResponse;
 import com.guardia.core.service.ExpedienteService;
+import com.guardia.core.dto.response.VerificacionHashResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,5 +25,20 @@ public class ExpedienteController {
     public ResponseEntity<ApiResponse<ExpedienteResponse>> registrarExpediente(@Valid @RequestBody ExpedienteRequest request) {
         ExpedienteResponse nuevoExpediente = expedienteService.crear(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Expediente registrado.", nuevoExpediente));
+    }
+
+    @PatchMapping("/{id}/sellar")
+    public ResponseEntity<ApiResponse<ExpedienteResponse>> sellar(
+        @PathVariable Long id,
+        @RequestParam Long agenteSelladorId) {
+        return ResponseEntity.ok(ApiResponse.ok("Expediente sellado.",
+            expedienteService.sellar(id, agenteSelladorId)));
+    }
+
+    @GetMapping("/{id}/verificar-integridad")
+    public ResponseEntity<ApiResponse<VerificacionHashResponse>> verificarIntegridad(
+        @PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.ok("Verificación completada.",
+            expedienteService.verificarIntegridad(id)));
     }
 }

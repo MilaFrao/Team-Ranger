@@ -2,6 +2,7 @@ package com.guardia.core.service;
 
 import com.guardia.core.dto.request.ExpedienteRequest;
 import com.guardia.core.dto.response.ExpedienteResponse;
+import com.guardia.core.dto.response.VerificacionHashResponse;
 import com.guardia.core.model.enums.EstadoExpediente;
 
 import java.util.List;
@@ -20,5 +21,6 @@ public interface ExpedienteService {
     ExpedienteResponse asignarInvestigador(Long id, Long investigadorId);
     ExpedienteResponse vincularEscena(Long id, Long escenaId);
     ExpedienteResponse asignarFechaHecho(Long id, String fecha);
+    VerificacionHashResponse verificarIntegridad(Long id);
     boolean validarDatos(Long id);
 }

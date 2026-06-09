@@ -32,6 +32,12 @@ public class Expediente {
 
     private LocalDateTime fechaSellado;
 
+    @Column(name = "hash_integridad", length = 64)
+    private String hashIntegridad;
+
+    @Column(name = "agente_sellador_info", length = 500)
+    private String agenteSelladorInfo;
+
     private String descripcionHecho;
 
     private LocalDateTime fechaHecho;
@@ -171,4 +177,9 @@ public class Expediente {
     public String getMunicipio() { return this.municipio; }
     public void setMunicipio(String municipio) { this.municipio = municipio; }
 
+    public String getHashIntegridad() { return this.hashIntegridad; }
+    public void setHashIntegridad(String h) { this.hashIntegridad = h; }
+
+    public String getAgenteSelladorInfo() { return this.agenteSelladorInfo; }
+    public void setAgenteSelladorInfo(String i) { this.agenteSelladorInfo = i; }
 }
