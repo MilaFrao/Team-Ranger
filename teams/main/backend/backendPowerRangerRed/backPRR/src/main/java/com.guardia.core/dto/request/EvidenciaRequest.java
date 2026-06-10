@@ -15,6 +15,8 @@ public record EvidenciaRequest(
         Long escenaId,
 
         Long investigadorId
+
+        String hashArchivoCliente
 ) {
     public String getNumeroItem() { return this.numeroItem; }
     public String getTipo() { return this.tipo; }

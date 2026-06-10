@@ -50,7 +50,8 @@ public class EvidenciaServiceImpl implements EvidenciaService {
                 request.tipo(),
                 request.descripcion(),
                 investigador,
-                hashStrategy
+                hashStrategy,
+                request.hashArchivoCliente()
         );
         evidencia.asignarNumero(numeroItem);
 

@@ -13,8 +13,10 @@ export interface Evidencia {
     embalaje: string
     horaRecoleccion: string
     hashIntegridad?: string
+    hashLocal?: string
     timestamp?: string
     investigadorId?: number
+    archivoNombre?: string
 }
 
 export interface EscenaNegativaItem {
@@ -215,9 +217,13 @@ export function useEscenaCrimen() {
         setState((prev: EscenaCrimenState) => ({ ...prev, escenaId: id, sincronizado: true }))
     }
 
-    const completarPaso1 = () => {
+    const completarPaso1 = async () => {
         if (!canCompletarPaso1) return
         if (isPaso1Completado) return
+        if (state.escenaId) {
+            const { avanzarPasoEscena } = await import('../services/escenaService')
+            await avanzarPasoEscena(state.escenaId)
+        }
         setState((prev: EscenaCrimenState) => ({
             ...prev,
             paso_actual: 2,
@@ -245,9 +251,13 @@ export function useEscenaCrimen() {
         }))
     }
 
-    const completarPaso3 = () => {
+    const completarPaso3 = async () => {
         if (!canCompletarPaso3) return
         if (isPaso3Completado) return
+        if (state.escenaId) {
+            const { avanzarPasoEscena } = await import('../services/escenaService')
+            await avanzarPasoEscena(state.escenaId)
+        }
         setState((prev: EscenaCrimenState) => ({
             ...prev,
             paso_actual: 4,
@@ -255,9 +265,13 @@ export function useEscenaCrimen() {
         }))
     }
 
-    const completarPaso4 = () => {
+    const completarPaso4 = async () => {
         if (!canCompletarPaso4) return
         if (isPaso4Completado) return
+        if (state.escenaId) {
+            const { avanzarPasoEscena } = await import('../services/escenaService')
+            await avanzarPasoEscena(state.escenaId)
+        }
         setState((prev: EscenaCrimenState) => ({ ...prev, paso4_completado: true }))
     }
 
