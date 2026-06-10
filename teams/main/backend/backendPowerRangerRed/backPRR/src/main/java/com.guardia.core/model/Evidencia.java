@@ -43,13 +43,17 @@ public class Evidencia {
     private Usuario investigador;
 
     // Methods
-    public Evidencia registrarEvidencia(Escena escena, String tipo, String descripcion, Usuario investigador, HashStrategy hashStrategy) {
+    public Evidencia registrarEvidencia(Escena escena, String tipo, String descripcion, Usuario investigador, HashStrategy hashStrategy, String hashArchivoCliente) {
         this.escena = escena;
         this.tipo = tipo;
         this.descripcion = descripcion;
         this.timestampRegistro = LocalDateTime.now();
-        String contenido = tipo + "|" + descripcion;
-        this.hashIntegridad = hashStrategy.calcular(contenido);
+        if (hashArchivoCliente != null && !hashArchivoCliente.isBlank()) {
+            this.hashIntegridad = hashArchivoCliente;
+        } else {
+            String contenido = tipo + "|" + descripcion;
+            this.hashIntegridad = hashStrategy.calcular(contenido);
+        }
         return this;
     }
 
