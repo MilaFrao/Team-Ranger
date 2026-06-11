@@ -1,7 +1,5 @@
 package com.guardia.core.controller;
-
 import com.guardia.core.dto.request.*;
-import com.guardia.core.dto.request.IncidenteRequest;
 import com.guardia.core.dto.response.ExpedienteResponse;
 import com.guardia.core.exception.ApiResponse;
 import com.guardia.core.service.ExpedienteService;
@@ -61,11 +59,11 @@ public class IncidenteController {
         dest.setDelitos(mapDelitos(src.getDelitos()));
         dest.setDescripcion(src.getDescripcion());
         dest.setEsDenunciaFormal(Boolean.TRUE.equals(src.getEsDenunciaFormal()));
-        dest.setInvolucrados(mapVictimas(src.getInvolucrados()));
+        dest.setVictimas(mapVictimas(src.getInvolucrados()));
 
-        /*if (src.getDenunciante() != null) {
+        if (src.getDenunciante() != null) {
             dest.setDenunciante(mapDenunciante(src.getDenunciante()));
-        }*/
+        }
 
         return dest;
     }

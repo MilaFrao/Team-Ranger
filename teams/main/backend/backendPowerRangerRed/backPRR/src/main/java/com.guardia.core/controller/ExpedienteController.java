@@ -15,7 +15,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/api/expedientes")
-//@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class ExpedienteController {
 
@@ -26,18 +26,19 @@ public class ExpedienteController {
         ExpedienteResponse nuevoExpediente = expedienteService.crear(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Expediente registrado.", nuevoExpediente));
     }
+
     @PatchMapping("/{id}/sellar")
     public ResponseEntity<ApiResponse<ExpedienteResponse>> sellar(
-            @PathVariable Long id,
-            @RequestParam Long agenteSelladorId) {
+        @PathVariable Long id,
+        @RequestParam Long agenteSelladorId) {
         return ResponseEntity.ok(ApiResponse.ok("Expediente sellado.",
-                expedienteService.sellar(id, agenteSelladorId)));
+            expedienteService.sellar(id, agenteSelladorId)));
     }
 
     @GetMapping("/{id}/verificar-integridad")
     public ResponseEntity<ApiResponse<VerificacionHashResponse>> verificarIntegridad(
-            @PathVariable Long id) {
+        @PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok("Verificación completada.",
-                expedienteService.verificarIntegridad(id)));
+            expedienteService.verificarIntegridad(id)));
     }
 }

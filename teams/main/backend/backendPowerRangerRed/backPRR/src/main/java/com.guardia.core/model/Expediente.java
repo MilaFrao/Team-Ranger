@@ -18,7 +18,7 @@ public class Expediente {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     // Folio visible al usuario
     @Column(unique = true)
@@ -38,7 +38,6 @@ public class Expediente {
     @Column(name = "agente_sellador_info", length = 500)
     private String agenteSelladorInfo;
 
-    @Column(name = "descripcion_hecho", columnDefinition = "TEXT")
     private String descripcionHecho;
 
     private LocalDateTime fechaHecho;
@@ -63,23 +62,15 @@ public class Expediente {
     @JoinColumn(name = "localizacion_id")
     private Localizacion localizacion;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "denunciante_id")
-    private Denunciante denunciante;
-
-    /*@OneToMany(mappedBy = "expediente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Escena> escenas = new ArrayList<>();*/
-
     @OneToMany(mappedBy = "expediente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Victima> victimas = new ArrayList<>();
+    private List<Escena> escenas = new ArrayList<>();
 
-    /*@ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "expediente_modus_operandi",
-            joinColumns = @JoinColumn(name = "expediente_id"),
-            inverseJoinColumns = @JoinColumn(name = "modus_operandi_id")
-    )
-    private List<ModusOperandi> modusOperandiList = new ArrayList<>();*/
+    @OneToMany(mappedBy = "expediente", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Involucrado> involucrados = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "expediente_modus_operandi", joinColumns = @JoinColumn(name = "expediente_id"), inverseJoinColumns = @JoinColumn(name = "modus_operandi_id"))
+    private List<ModusOperandi> modusOperandiList = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private EstadoExpediente estadoExpediente = EstadoExpediente.BORRADOR;
@@ -109,12 +100,12 @@ public class Expediente {
         this.estadoExpediente = nuevoEstado;
     }
 
-    /*public void vincularEscena(Escena escena) {
+    public void vincularEscena(Escena escena) {
         if (escena != null) {
             this.escenas.add(escena);
             escena.setExpediente(this);
         }
-    }*/
+    }
 
     public void sellarUsuario(Usuario agente) {
         this.selladoPor = agente;
@@ -122,24 +113,18 @@ public class Expediente {
         this.estadoExpediente = EstadoExpediente.PROCESADO_Y_SELLADO;
     }
 
-    @OneToMany(mappedBy = "expediente", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Involucrado> involucrados = new ArrayList<>();
-
-    // 🛠️ AGREGA ESTE MÉTODO PARA SOLUCIONAR EL ERROR:
-    public void vincularInvolucrado(Involucrado involucrado) {
-        if (involucrados == null) {
-            this.involucrados = new ArrayList<>();
-        }
-        this.involucrados.add(involucrado);
-        involucrado.setExpediente(this); // Vincula también el involucrado al expediente actual
+    public void agregarInvolucrado(Involucrado involucrado) {
+        involucrados.add(involucrado);
+        involucrado.setExpediente(this);
     }
+
 
     public void asignarFechaHecho(LocalDateTime fecha) {
         this.fechaHecho = fecha;
     }
 
     // Explicit getters/setters to avoid Lombok dependency issues in some build environments
-    public long getId() { return this.id; }
+    public Long getId() { return this.id; }
 
     public String getFolio() { return this.folio; }
     public void setFolio(String folio) { this.folio = folio; }
@@ -174,17 +159,11 @@ public class Expediente {
     public Localizacion getLocalizacion() { return this.localizacion; }
     public void setLocalizacion(Localizacion localizacion) { this.localizacion = localizacion; }
 
-    public Denunciante getDenunciante() { return this.denunciante; }
-    public void setDenunciante(Denunciante denunciante) { this.denunciante = denunciante; }
+    public List<Escena> getEscenas() { return this.escenas; }
+    public void setEscenas(List<Escena> escenas) { this.escenas = escenas; }
 
-    /*public List<Escena> getEscenas() { return this.escenas; }
-    public void setEscenas(List<Escena> escenas) { this.escenas = escenas; }*/
-
-    public List<Victima> getVictimas() { return this.victimas; }
-    public void setVictimas(List<Victima> victimas) { this.victimas = victimas; }
-
-    /*public List<ModusOperandi> getModusOperandiList() { return this.modusOperandiList; }
-    public void setModusOperandiList(List<ModusOperandi> modusOperandiList) { this.modusOperandiList = modusOperandiList; }*/
+    public List<ModusOperandi> getModusOperandiList() { return this.modusOperandiList; }
+    public void setModusOperandiList(List<ModusOperandi> modusOperandiList) { this.modusOperandiList = modusOperandiList; }
 
     public EstadoExpediente getEstadoExpediente() { return this.estadoExpediente; }
     public void setEstadoExpediente(EstadoExpediente estadoExpediente) { this.estadoExpediente = estadoExpediente; }
@@ -203,12 +182,4 @@ public class Expediente {
 
     public String getAgenteSelladorInfo() { return this.agenteSelladorInfo; }
     public void setAgenteSelladorInfo(String i) { this.agenteSelladorInfo = i; }
-
-    /*public String getInvestigadorAsignado() {
-
-    }
-
-    public boolean isTieneAlertaPatron() {
-
-    }*/
 }

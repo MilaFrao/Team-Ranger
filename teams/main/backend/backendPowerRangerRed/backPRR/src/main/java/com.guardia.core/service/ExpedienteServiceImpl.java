@@ -1,32 +1,33 @@
 package com.guardia.core.service;
 
 import com.guardia.core.dto.request.ExpedienteRequest;
+import com.guardia.core.dto.request.DelitoRequest;
 import com.guardia.core.dto.response.ExpedienteResponse;
-import com.guardia.core.dto.response.ExpedienteActivoResponse;
-import com.guardia.core.dto.response.LocalizacionResponse;
-import com.guardia.core.dto.response.SubtipoDelitoResponse;
-import com.guardia.core.dto.response.TipoDelitoResponse;
-//import com.guardia.core.dto.response.EscenaResponse;
 import com.guardia.core.dto.response.UsuarioResponse;
-import com.guardia.core.dto.response.VictimaResponse;
+import com.guardia.core.dto.response.TipoDelitoResponse;
+import com.guardia.core.dto.response.SubtipoDelitoResponse;
+import com.guardia.core.dto.response.InvolucradoResponse;
+import com.guardia.core.dto.response.LocalizacionResponse;
+import com.guardia.core.dto.response.EscenaResponse;
 import com.guardia.core.dto.response.VerificacionHashResponse;
-import com.guardia.core.dto.response.DenuncianteResponse;
 import com.guardia.core.SelloExpedienteEvent;
 import com.guardia.core.exception.BusinessException;
 import com.guardia.core.exception.ResourceNotFoundException;
 import com.guardia.core.model.Expediente;
 import com.guardia.core.model.Localizacion;
+import com.guardia.core.model.Involucrado;
 import com.guardia.core.model.DelitoEnExpediente;
 import com.guardia.core.model.Usuario;
-//import com.guardia.core.model.Escena;
+import com.guardia.core.model.Escena;
 import com.guardia.core.model.enums.EstadoExpediente;
+import com.guardia.core.model.enums.TipoRol;
 import com.guardia.core.repository.ExpedienteRepository;
 import com.guardia.core.repository.UsuarioRepository;
 import com.guardia.core.repository.TipoDelitoRepository;
 import com.guardia.core.repository.SubtipoDelitoRepository;
 import com.guardia.core.repository.LocalizacionRepository;
-import com.guardia.core.repository.DenuncianteRepository;
-// com.guardia.core.repository.EscenaRepository;
+import com.guardia.core.repository.InvolucradoRepository;
+import com.guardia.core.repository.EscenaRepository;
 import com.guardia.core.SelloStrategy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -47,10 +47,10 @@ public class ExpedienteServiceImpl implements ExpedienteService {
     private final TipoDelitoRepository tipoDelitoRepository;
     private final SubtipoDelitoRepository subtipoDelitoRepository;
     private final LocalizacionRepository localizacionRepository;
-    private final DenuncianteRepository denuncianteRepository;
-    //private final EscenaRepository escenaRepository;
+    private final EscenaRepository escenaRepository;
     private final SelloStrategy selloStrategy;
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
+    private final InvolucradoRepository involucradoRepository;
 
     @Override
     public ExpedienteResponse crear(ExpedienteRequest request) {
@@ -66,36 +66,74 @@ public class ExpedienteServiceImpl implements ExpedienteService {
             localizacion = localizacionRepository.save(localizacion);
         }
 
-        // Mapear denunciante si viene
-        /*Denunciante denunciante = null;
-        if (request.getDenunciante() != null) {
-            Denunciante d = new Denunciante();
-            d.setNombre(request.getDenunciante().getNombre());
-            d.setIdentificacion(request.getDenunciante().getCedula());
-            d.setDireccion(request.getDenunciante().getDireccion());
-            d.setTelefono(request.getDenunciante().getNumeroTelefono());
-            d.setNacionalidad(request.getDenunciante().getNacionalidad());
-            d.setRelacionConHecho(request.getDenunciante().getRelacionConCrimen());
-            denunciante = denuncianteRepository.save(d);
-        }*/
 
         // Crear expediente
-        String folio = "EXP-2026-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        String folio = "EXP-2026-" +
+                java.util.UUID.randomUUID()
+                        .toString()
+                        .substring(0, 8)
+                        .toUpperCase();
 
         Expediente expediente = new Expediente();
+
         expediente.setFolio(folio);
         expediente.setNumeroUnico(folio);
         expediente.setFechaCreacion(LocalDateTime.now());
         expediente.setDescripcionHecho(request.getDescripcion());
         expediente.setLocalizacion(localizacion);
-        //expediente.setDenunciante(denunciante);
-        //expediente.setEscenas(new ArrayList<>());
-        expediente.setVictimas(new ArrayList<>());
-        //expediente.setModusOperandiList(new ArrayList<>());
-        expediente.setEstadoExpediente(EstadoExpediente.BORRADOR);
+
+        expediente.setInvolucrados(new ArrayList<>());
+        expediente.setEscenas(new ArrayList<>());
+        expediente.setModusOperandiList(new ArrayList<>());
+
+        expediente.setEstadoExpediente(
+                EstadoExpediente.BORRADOR
+        );
+
+        if (request.getDenunciante() != null) {
+
+            Involucrado denunciante = new Involucrado();
+
+            denunciante.setNombre(
+                    request.getDenunciante().getNombre()
+            );
+
+            denunciante.setIdentificacion(
+                    request.getDenunciante().getCedula()
+            );
+
+            denunciante.setNumeroTelefono(
+                    request.getDenunciante().getNumeroTelefono()
+            );
+
+            denunciante.setNacionalidad(
+                    request.getDenunciante().getNacionalidad()
+            );
+
+            denunciante.setDireccion(
+                    request.getDenunciante().getDireccion()
+            );
+
+            denunciante.setRelacionConHecho(
+                    request.getDenunciante().getRelacionConCrimen()
+            );
+
+            denunciante.setRol(
+                    TipoRol.DENUNCIANTE
+            );
+
+            denunciante.setExpediente(
+                    expediente
+            );
+
+            expediente.getInvolucrados()
+                    .add(denunciante);
+        }
+
 
         // Mapear delitos (si vienen)
-        if (request.getDelitos() != null) {
+        // Mapear delitos (si vienen)
+        if (request.getDelitos() != null && !request.getDelitos().isEmpty()) {
             request.getDelitos().forEach(dReq -> {
                 DelitoEnExpediente delito = new DelitoEnExpediente();
                 delito.setSubtipoDelito(dReq.getDelito().toUpperCase());
@@ -105,21 +143,65 @@ public class ExpedienteServiceImpl implements ExpedienteService {
                 delito.setFechaHoraHecho(fechaHora);
                 expediente.getDelitos().add(delito);
             });
+
+            // Promover el primer delito a la FK directa del expediente
+            DelitoRequest primero = request.getDelitos().get(0);
+            tipoDelitoRepository.findByNombre(primero.getDelito())
+                    .ifPresent(expediente::setTipoDelito);
+
+            // Promover subtipo si el tipoDelito fue encontrado y tiene subDelito
+            if (expediente.getTipoDelito() != null && primero.getSubDelito() != null) {
+                String nombreSubtipo = primero.getSubDelito().getNombre();
+                if (nombreSubtipo != null && !nombreSubtipo.isBlank()) {
+                    subtipoDelitoRepository
+                            .findByTipoDelitoId(expediente.getTipoDelito().getId())
+                            .stream()
+                            .filter(s -> s.getNombre().equalsIgnoreCase(nombreSubtipo))
+                            .findFirst()
+                            .ifPresent(expediente::setSubtipoDelito);
+                }
+            }
         }
 
-        /*// Mapear víctimas
+        // Mapear víctimas
         if (request.getVictimas() != null) {
+
             request.getVictimas().forEach(vReq -> {
-                Victima v = new Victima();
-                v.setNombre(vReq.getNombre());
-                v.setIdentificacion(vReq.getCedula());
-                v.setTelefono(vReq.getTelefono());
-                v.setNacionalidad(vReq.getNacionalidad());
-                v.setDireccion(vReq.getDireccion());
-                v.setExpediente(expediente);
-                expediente.getVictimas().add(v);
+
+                Involucrado victima = new Involucrado();
+
+                victima.setNombre(
+                        vReq.getNombre()
+                );
+
+                victima.setIdentificacion(
+                        vReq.getCedula()
+                );
+
+                victima.setNumeroTelefono(
+                        vReq.getTelefono()
+                );
+
+                victima.setNacionalidad(
+                        vReq.getNacionalidad()
+                );
+
+                victima.setDireccion(
+                        vReq.getDireccion()
+                );
+
+                victima.setRol(
+                        TipoRol.VICTIMA
+                );
+
+                victima.setExpediente(
+                        expediente
+                );
+
+                expediente.getInvolucrados()
+                        .add(victima);
             });
-        }*/
+        }
 
         return toResponse(expedienteRepository.save(expediente));
     }
@@ -142,6 +224,12 @@ public class ExpedienteServiceImpl implements ExpedienteService {
     @Transactional(readOnly = true)
     public List<ExpedienteResponse> obtenerTodos() {
         return expedienteRepository.findAll().stream().map(this::toResponse).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ExpedienteResponse> obtenerPorEstado(EstadoExpediente estado) {
+        return expedienteRepository.findByEstadoExpediente(estado).stream().map(this::toResponse).toList();
     }
 
     @Override
@@ -209,14 +297,14 @@ public class ExpedienteServiceImpl implements ExpedienteService {
         return toResponse(expedienteRepository.save(expediente));
     }
 
-    /*@Override
+    @Override
     public ExpedienteResponse vincularEscena(Long id, Long escenaId) {
         Expediente expediente = findById(id);
         Escena escena = escenaRepository.findById(escenaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Escena", escenaId));
         expediente.vincularEscena(escena);
         return toResponse(expedienteRepository.save(expediente));
-    }*/
+    }
 
     @Override
     public ExpedienteResponse asignarFechaHecho(Long id, String fecha) {
@@ -228,60 +316,6 @@ public class ExpedienteServiceImpl implements ExpedienteService {
     @Override
     public boolean validarDatos(Long id) {
         return findById(id).validarDatos();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public VerificacionHashResponse verificarIntegridad(Long id) {
-        Expediente expediente = findById(id);
-        if (expediente.getHashIntegridad() == null)
-            return new VerificacionHashResponse(id, expediente.getFolio(), false,
-                    "El expediente no ha sido sellado.", null, null);
-
-        String recalculado = selloStrategy.recalcularHash(expediente);
-        boolean integro = expediente.getHashIntegridad().equals(recalculado);
-
-        return new VerificacionHashResponse(id, expediente.getFolio(), integro,
-                integro ? "Integridad verificada: el expediente no fue alterado."
-                        : "⚠ ALERTA: discrepancia detectada. El expediente fue modificado.",
-                expediente.getHashIntegridad(), recalculado);
-    }
-
-
-    @Override
-    public List<ExpedienteActivoResponse> obtenerExpedientesActivos() {
-        // Aquí puedes usar el mismo método de búsqueda filtrando por el enum que consideres activo
-        List<Expediente> expedientes = expedienteRepository.findByEstatus(EstadoExpediente.INVESTIGACION_ACTIVA);
-
-        return expedientes.stream()
-                .map(this::convertirAActivoResponse) // 🎯 Usa el convertidor de ExpedienteActivoResponse
-                .collect(Collectors.toList());
-    }
-
-
-    // 📄 Tu método de conversión debe devolver ExpedienteActivoResponse
-    private ExpedienteActivoResponse convertirAActivoResponse(Expediente entidad) {
-        ExpedienteActivoResponse response = new ExpedienteActivoResponse();
-        response.setId(entidad.getId());
-        response.setFolioCOPP(entidad.getFolio());
-        response.setTipoDelito(entidad.getTipoDelito());
-        response.setSubtipoDelito(entidad.getSubtipoDelito());
-        response.setFechaHecho(entidad.getFechaHecho());
-        response.setFechaCreacion(entidad.getFechaCreacion());
-        response.setEstatus(entidad.getEstadoExpediente()); // Ojo aquí con los Enums Front/Back
-        response.setMunicipio(entidad.getMunicipio());
-        response.setSector(entidad.getSector());
-        return response;
-    }
-    @Override
-    public List<ExpedienteResponse> obtenerPorEstado(EstadoExpediente estadoExpediente) {
-        // 1. Buscamos en la base de datos usando el método seguro con @Query
-        List<Expediente> expedientes = expedienteRepository.findByEstatus(estadoExpediente);
-
-        // 2. Mapeamos de forma limpia usando tu función toResponse
-        return expedientes.stream()
-                .map(this::toResponse) // 🎯 Aquí llamamos a tu método convertidor
-                .collect(Collectors.toList());
     }
 
     private Expediente findById(Long id) {
@@ -307,11 +341,21 @@ public class ExpedienteServiceImpl implements ExpedienteService {
                         e.getSubtipoDelito().getDescripcion(), e.getTipoDelito().getId(),
                         e.getTipoDelito().getNombre());
 
-        DenuncianteResponse denunciante = e.getDenunciante() == null ? null :
-                new DenuncianteResponse(e.getDenunciante().getId(), e.getDenunciante().getNombre(),
-                        e.getDenunciante().getIdentificacion(), e.getDenunciante().getTelefono(),
-                        e.getDenunciante().getNacionalidad(), e.getDenunciante().getDireccion(),
-                        e.getDenunciante().getRelacionConHecho());
+        List<InvolucradoResponse> involucrados =
+                e.getInvolucrados() == null
+                        ? List.of()
+                        : e.getInvolucrados().stream()
+                        .map(i -> new InvolucradoResponse(
+                                i.getId(),
+                                i.getNombre(),
+                                i.getIdentificacion(),
+                                i.getNumeroTelefono(),
+                                i.getNacionalidad(),
+                                i.getDireccion(),
+                                i.getRol(),
+                                i.getRelacionConHecho()
+                        ))
+                        .toList();
 
         LocalizacionResponse localizacion = e.getLocalizacion() == null ? null :
                 new LocalizacionResponse(e.getLocalizacion().getId(), e.getLocalizacion().getMunicipio(),
@@ -319,18 +363,42 @@ public class ExpedienteServiceImpl implements ExpedienteService {
                         e.getLocalizacion().getReferencia(), e.getLocalizacion().getLatitud(),
                         e.getLocalizacion().getLongitud(), e.getLocalizacion().obtenerResumenUbicacion());
 
-        /*List<EscenaResponse> escenas = e.getEscenas() == null ? List.of() :
-                e.getEscenas().stream().map(es -> new EscenaResponse(es.getId(), es.getEstadoChecklist(),
-                        es.getInicioProceso(), es.getCierreProceso(), e.getId(), null,
-                        List.of(), List.of())).toList();*/
-
-        List<VictimaResponse> victimas = e.getVictimas() == null ? List.of() :
-                e.getVictimas().stream().map(v -> new VictimaResponse(v.getId(), v.getNombre(),
-                        v.getIdentificacion(), v.getTelefono(), v.getNacionalidad(),
-                        v.getDireccion(), e.getId())).toList();
-
+        List<EscenaResponse> escenas = e.getEscenas() == null
+                ? List.of()
+                : e.getEscenas().stream()
+                .map(es -> new EscenaResponse(
+                        es.getId(),
+                        es.getEstadoChecklist(),
+                        es.getPasoActual() != null
+                        ? es.getPasoActual().name()
+                        : null,
+                        es.getInicioProceso(),
+                        es.getCierreProceso(),
+                        e.getId(),
+                        null,
+                        List.of(),
+                        List.of()
+                ))
+                .toList();
         return new ExpedienteResponse(e.getId(), e.getFolio(), e.getEstadoExpediente(),
                 e.getFechaCreacion(), e.getFechaSellado(), e.getDescripcionHecho(),
                 e.getFechaHecho(), creadoPor, selladoPor, tipoDelito, subtipoDelito,
-                denunciante, localizacion, victimas, e.getHashIntegridad(), e.getAgenteSelladorInfo());    }
+                localizacion, escenas, involucrados, e.getHashIntegridad(), e.getAgenteSelladorInfo());
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public VerificacionHashResponse verificarIntegridad(Long id) {
+        Expediente expediente = findById(id);
+        if (expediente.getHashIntegridad() == null)
+            return new VerificacionHashResponse(id, expediente.getFolio(), false,
+                    "El expediente no ha sido sellado.", null, null);
+
+        String recalculado = selloStrategy.recalcularHash(expediente);
+        boolean integro = expediente.getHashIntegridad().equals(recalculado);
+
+        return new VerificacionHashResponse(id, expediente.getFolio(), integro,
+                integro ? "Integridad verificada: el expediente no fue alterado."
+                        : "⚠ ALERTA: discrepancia detectada. El expediente fue modificado.",
+                expediente.getHashIntegridad(), recalculado);
+    }
 }

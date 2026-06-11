@@ -1,7 +1,6 @@
 package com.guardia.core.dto.response;
 
 import com.guardia.core.model.enums.EstadoExpediente;
-import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,10 +17,9 @@ public record ExpedienteResponse(
         UsuarioResponse selladoPor,
         TipoDelitoResponse tipoDelito,
         SubtipoDelitoResponse subtipoDelito,
-        DenuncianteResponse denunciante,
         LocalizacionResponse localizacion,
-        //List<EscenaResponse> escenas,
-        List<VictimaResponse> victimas,
+        List<EscenaResponse> escenas,
+        List<InvolucradoResponse> involucrados,
         String hashIntegridad,
         String agenteSelladorInfo
 ) {}

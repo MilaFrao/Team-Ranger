@@ -3,10 +3,9 @@ package com.guardia.core.model;
 import com.guardia.core.model.enums.TipoRol;
 import jakarta.persistence.*;
 import lombok.*;
-import java.util.List;
 
 @Entity
-@Table(name = "expediente_involucrados")
+@Table(name = "involucrados")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,30 +17,29 @@ public class Involucrado {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String nombre;
-    private String apellido;
 
     @Column(nullable = false)
     private String identificacion;
 
-    private String telefono;
     private String nacionalidad;
-    private String direccion;
-    private String fotografiaURL;
 
-    // Relación ManyToOne hacia Expediente
+    @Column(name = "numero_telefono")
+    private String numeroTelefono;
+
+    private String direccion;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TipoRol rol;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "expediente_id", nullable = false)
+    @JoinColumn(name = "expediente_id")
     private Expediente expediente;
 
-    // Tabla auxiliar solo para los roles (Enums) de este involucrado
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(
-            name = "involucrado_roles",
-            joinColumns = @JoinColumn(name = "involucrado_id")
-    )
-    @Enumerated(EnumType.STRING)
-    @Column(name = "rol")
-    private List<TipoRol> roles;
-    
+    @Column(name = "relacion_con_hecho")
+    private String relacionConHecho;
+
 }
+

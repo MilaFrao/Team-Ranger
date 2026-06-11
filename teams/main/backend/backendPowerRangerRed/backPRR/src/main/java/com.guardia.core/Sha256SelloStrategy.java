@@ -43,14 +43,13 @@ public class Sha256SelloStrategy implements SelloStrategy {
                 .append(e.getTipoDelito()    != null ? e.getTipoDelito().getId()    : "").append("|")
                 .append(e.getSubtipoDelito() != null ? e.getSubtipoDelito().getId() : "").append("|")
                 .append(e.getLocalizacion()  != null ? e.getLocalizacion().getId()  : "").append("|")
-                .append(e.getDenunciante()   != null ? e.getDenunciante().getId()   : "").append("|")
                 .append(safe(e.getEsDenunciaFormal()));
 
         if (e.getDelitos() != null)
             e.getDelitos().forEach(d -> sb.append("|D:").append(safe(d.getSubtipoDelito()))
                     .append(":").append(safe(d.getFechaHoraHecho())));
-        if (e.getVictimas() != null)
-            e.getVictimas().forEach(v -> sb.append("|V:").append(safe(v.getIdentificacion())));
+        if (e.getInvolucrados() != null)
+            e.getInvolucrados().forEach(v -> sb.append("|V:").append(safe(v.getIdentificacion())));
 
         try {
             byte[] bytes = MessageDigest.getInstance("SHA-256")

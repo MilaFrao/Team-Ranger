@@ -208,14 +208,30 @@ export const RegistroDelHecho = () => {
         })
 
         try {
-            await apiClient.post('/incidentes', payload)
-            showToast('Incidente registrado exitosamente', 'success')
+            // 1. Crear el expediente
+            const expedienteCreado = await apiClient.post<{ data: { id: number } }>('/incidentes', payload)
 
-            resetForm()                  // limpia formData (con fecha/hora frescas)
-            resetDelitos()               // limpia los delitos
-            setInvolucradoErrors({})     // limpia errores de validación
-            setGpsMode('actual')         // vuelve al modo GPS por defecto
-            setModoCronologia(false)     // vuelve al modo texto
+            await fetch(`/api/expedientes/${expedienteCreado.data.id}/sellar?agenteSelladorId=1`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+            })
+
+            // 2. Sellarlo automáticamente (agenteSelladorId=1 por ahora)
+            try {
+                await fetch(`/api/expedientes/${expedienteCreado.data.id}/sellar?agenteSelladorId=1`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                })
+                showToast('Expediente registrado y sellado exitosamente', 'success')
+            } catch {
+                showToast('Expediente guardado, pero no se pudo sellar automáticamente', 'error')
+            }
+
+            resetForm()
+            resetDelitos()
+            setInvolucradoErrors({})
+            setGpsMode('actual')
+            setModoCronologia(false)
             setMomentos([{ id: crypto.randomUUID(), hora: '', texto: '' }])
 
         } catch (err) {

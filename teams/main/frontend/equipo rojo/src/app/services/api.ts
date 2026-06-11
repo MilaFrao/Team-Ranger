@@ -66,4 +66,27 @@ export const apiClient = {
     })
     return handleResponse<T>(response)
   },
+
+  async patch<T>(path: string, body?: unknown): Promise<T> {
+    const response = await fetch(`${BASE_URL}${API_PREFIX}${path}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader(),
+      },
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    })
+    return handleResponse<T>(response)
+  },
+
+  async delete<T>(path: string): Promise<T> {
+    const response = await fetch(`${BASE_URL}${API_PREFIX}${path}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader(),
+      },
+    })
+    return handleResponse<T>(response)
+  },
 }
