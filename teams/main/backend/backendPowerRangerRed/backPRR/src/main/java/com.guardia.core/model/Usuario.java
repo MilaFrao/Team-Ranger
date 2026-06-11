@@ -36,8 +36,6 @@ public class Usuario {
     @OneToMany(mappedBy = "selladoPor", fetch = FetchType.LAZY)
     private List<Expediente> expedientesSellados;
 
-    @OneToMany(mappedBy = "levantadaPor", fetch = FetchType.LAZY)
-    private List<Escena> escenasLevantadas;
 
     // Methods
     public boolean autenticar(String credenciales) {

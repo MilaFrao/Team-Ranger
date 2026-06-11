@@ -4,6 +4,9 @@ import com.guardia.core.dto.request.ExpedienteRequest;
 import com.guardia.core.dto.response.ExpedienteResponse;
 import com.guardia.core.dto.response.VerificacionHashResponse;
 import com.guardia.core.model.enums.EstadoExpediente;
+import com.guardia.core.dto.response.ExpedienteActivoResponse;
+import java.util.List;
+
 
 import java.util.List;
 
@@ -12,15 +15,16 @@ public interface ExpedienteService {
     ExpedienteResponse obtenerPorId(Long id);
     ExpedienteResponse obtenerPorFolio(String folio);
     List<ExpedienteResponse> obtenerTodos();
-    List<ExpedienteResponse> obtenerPorEstado(EstadoExpediente estado);
+    List<ExpedienteResponse> obtenerPorEstado(EstadoExpediente estadoExpediente);
     List<ExpedienteResponse> obtenerPorCreador(Long usuarioId);
     ExpedienteResponse actualizar(Long id, ExpedienteRequest request);
     void eliminar(Long id);
     ExpedienteResponse sellar(Long id, Long agenteSelladorId);
     ExpedienteResponse cambiarEstado(Long id, EstadoExpediente nuevoEstado);
     ExpedienteResponse asignarInvestigador(Long id, Long investigadorId);
-    ExpedienteResponse vincularEscena(Long id, Long escenaId);
+    //ExpedienteResponse vincularEscena(Long id, Long escenaId);
     ExpedienteResponse asignarFechaHecho(Long id, String fecha);
     VerificacionHashResponse verificarIntegridad(Long id);
     boolean validarDatos(Long id);
+    List<ExpedienteActivoResponse> obtenerExpedientesActivos();
 }

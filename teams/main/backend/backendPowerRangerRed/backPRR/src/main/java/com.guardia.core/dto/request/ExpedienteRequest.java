@@ -21,9 +21,7 @@ public class ExpedienteRequest {
     private Boolean esDenunciaFormal;
 
     @NotEmpty(message = "Debe registrar al menos un victima")
-    private List<InvolucradosRequest> victimas;
-
-    private DenuncianteRequest denunciante;
+    private List<InvolucradosRequest> involucrados;
 
 
     public Boolean getEsDenunciaFormal() {
@@ -33,8 +31,8 @@ public class ExpedienteRequest {
     // Compatibility helpers (some code expects record-style accessors)
     public String descripcion() { return this.descripcion; }
     public java.util.List<DelitoRequest> delitos() { return this.delitos; }
-    public java.util.List<InvolucradosRequest> victimas() { return this.victimas; }
+    public java.util.List<InvolucradosRequest> victimas() { return this.involucrados; }
     public UbicacionRequest ubicacion() { return this.ubicacion; }
     public Boolean esDenunciaFormal() { return this.esDenunciaFormal; }
-    public DenuncianteRequest denunciante() { return this.denunciante; }
+    //public DenuncianteRequest denunciante() { return this.denunciante; }
 }
