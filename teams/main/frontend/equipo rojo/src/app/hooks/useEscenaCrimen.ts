@@ -1,4 +1,3 @@
-// @ts-ignore
 import { useState, useEffect } from 'react'
 
 // --- TIPOS ---
