@@ -33,6 +33,7 @@ export interface EscenaCrimenState {
     paso2_completado: boolean
     paso3_completado: boolean
     paso4_completado: boolean
+    investigadorId: number | null
     tipoEscena: 'escena_completa' | 'solo_evidencia'
     folioExpediente: string | null
     expedienteId: number | null          // ID numérico del expediente en el backend
@@ -74,6 +75,7 @@ function makeInitialState(): EscenaCrimenState {
         paso2_completado: false,
         paso3_completado: false,
         paso4_completado: false,
+        investigadorId: null,
         tipoEscena: 'escena_completa',
         folioExpediente: null,
         expedienteId: null,
@@ -195,7 +197,11 @@ export function useEscenaCrimen() {
         ))
 
     const canCompletarPaso2 = todasEvidenciasCompletas && escenaNegativaValida
-    const canCompletarPaso3 = state.tipoEscena === 'solo_evidencia' || state.paso2_completado
+    const todasEvidenciasConHora = state.evidencias.length > 0 &&
+        state.evidencias.every(e => e.horaRecoleccion && e.horaRecoleccion.trim() !== '')
+
+    const canCompletarPaso3 = todasEvidenciasConHora &&
+        (state.tipoEscena === 'solo_evidencia' || state.paso2_completado)
     const canCompletarPaso4 = !!state.liberacion.hora
 
     // --- Acciones ---
@@ -217,12 +223,15 @@ export function useEscenaCrimen() {
         setState((prev: EscenaCrimenState) => ({ ...prev, escenaId: id, sincronizado: true }))
     }
 
-    const completarPaso1 = async () => {
-        if (!canCompletarPaso1) return
-        if (isPaso1Completado) return
-        if (state.escenaId) {
-            const { avanzarPasoEscena } = await import('../services/escenaService')
-            await avanzarPasoEscena(state.escenaId)
+    const completarPaso1 = async (pin: string) => {
+        if (!canCompletarPaso1 || isPaso1Completado) return
+        if (state.escenaId && state.investigadorId) {
+            const { firmarYAvanzarPaso } = await import('../services/firmaService')
+            // Lanza error si el PIN es incorrecto; el componente lo captura
+            await firmarYAvanzarPaso(state.escenaId, {
+                investigadorId: state.investigadorId,
+                pin,
+            })
         }
         setState((prev: EscenaCrimenState) => ({
             ...prev,
@@ -231,18 +240,22 @@ export function useEscenaCrimen() {
         }))
     }
 
-    const completarPaso2 = async () => {
-        if (!canCompletarPaso2) return
-        if (isPaso2Completado) return
-        if (state.escenaId) {
+    const completarPaso2 = async (pin: string) => {
+        if (!canCompletarPaso2 || isPaso2Completado) return
+        if (state.escenaId && state.investigadorId) {
             if (state.noHayEscenaNegativa) {
-                await persistirNoHayEscenaNegativa()          // ← NUEVO
+                await persistirNoHayEscenaNegativa()
             } else {
                 const pendientes = state.escenaNegativa.filter(en => en.id.includes('-'))
                 for (const en of pendientes) {
                     await guardarEscenaNegativaEnBackend(en.id)
                 }
             }
+            const { firmarYAvanzarPaso } = await import('../services/firmaService')
+            await firmarYAvanzarPaso(state.escenaId, {
+                investigadorId: state.investigadorId,
+                pin,
+            })
         }
         setState((prev: EscenaCrimenState) => ({
             ...prev,
@@ -251,12 +264,14 @@ export function useEscenaCrimen() {
         }))
     }
 
-    const completarPaso3 = async () => {
-        if (!canCompletarPaso3) return
-        if (isPaso3Completado) return
-        if (state.escenaId) {
-            const { avanzarPasoEscena } = await import('../services/escenaService')
-            await avanzarPasoEscena(state.escenaId)
+    const completarPaso3 = async (pin: string) => {
+        if (!canCompletarPaso3 || isPaso3Completado) return
+        if (state.escenaId && state.investigadorId) {
+            const { firmarYAvanzarPaso } = await import('../services/firmaService')
+            await firmarYAvanzarPaso(state.escenaId, {
+                investigadorId: state.investigadorId,
+                pin,
+            })
         }
         setState((prev: EscenaCrimenState) => ({
             ...prev,
@@ -265,13 +280,25 @@ export function useEscenaCrimen() {
         }))
     }
 
-    const completarPaso4 = async () => {
-        if (!canCompletarPaso4) return
-        if (isPaso4Completado) return
-        if (state.escenaId) {
-            const { avanzarPasoEscena } = await import('../services/escenaService')
-            await avanzarPasoEscena(state.escenaId)
+    const completarPaso4 = async (pin: string) => {
+        if (!canCompletarPaso4 || isPaso4Completado) return
+        if (state.escenaId && state.investigadorId) {
+            const { firmarYAvanzarPaso } = await import('../services/firmaService')
+            await firmarYAvanzarPaso(state.escenaId, {
+                investigadorId: state.investigadorId,
+                pin,
+            })
         }
+        const escenaCompletada = {
+            ...state,
+            paso4_completado: true,
+            completadoEn: new Date().toLocaleString(),
+            id: crypto.randomUUID(),
+        }
+        const historial = JSON.parse(localStorage.getItem('escenas_completadas') || '[]')
+        historial.push(escenaCompletada)
+        localStorage.setItem('escenas_completadas', JSON.stringify(historial))
+
         setState((prev: EscenaCrimenState) => ({ ...prev, paso4_completado: true }))
     }
 

@@ -8,6 +8,7 @@ import { StepperVisual } from '../../ui/StepperVisual'
 import { AlertaIntegridad } from '../../ui/AlertaIntegridad'
 import { HistorialEscenas } from './HistorialEscenas'
 import { tiposEvidencia, tiposEmbalaje, resultadoNegativo } from './index'
+import { PinFirmaModal } from '../../ui/PinFirmaModal'
 
 interface EscenaDelCrimenProps {
     expedienteIdInicial?: number
@@ -16,6 +17,12 @@ interface EscenaDelCrimenProps {
 
 export const EscenaDelCrimen = ({ expedienteIdInicial, folioInicial }: EscenaDelCrimenProps) => {
     const [mostrarHistorial, setMostrarHistorial] = useState(false)
+    const [modalFirma, setModalFirma] = useState<{
+        abierto: boolean
+        numeroPaso: number
+        nombrePaso: string
+        onConfirmar: (pin: string) => Promise<void>
+    } | null>(null)
 
     const {
         state,
@@ -58,6 +65,22 @@ export const EscenaDelCrimen = ({ expedienteIdInicial, folioInicial }: EscenaDel
         state.paso3_completado ? 3 : null,
         state.paso4_completado ? 4 : null,
     ].filter(Boolean) as number[]
+
+    const solicitarFirmaYCompletarPaso = (
+        numeroPaso: number,
+        nombrePaso: string,
+        accion: (pin: string) => Promise<void>
+    ) => {
+        setModalFirma({
+            abierto: true,
+            numeroPaso,
+            nombrePaso,
+            onConfirmar: async (pin: string) => {
+                await accion(pin)          // lanza si PIN es incorrecto
+                setModalFirma(null)        // cierra solo si fue exitoso
+            },
+        })
+    }
 
     {/*const progreso = (pasosCompletadosArray.length / 4) * 100*/}
 
@@ -179,7 +202,7 @@ export const EscenaDelCrimen = ({ expedienteIdInicial, folioInicial }: EscenaDel
                         )}
 
                         <NeonButton
-                            onClick={completarPaso1}
+                            onClick={() => solicitarFirmaYCompletarPaso(1, 'Aseguramiento del Perímetro', completarPaso1)}
                             disabled={!canCompletarPaso1 || state.paso1_completado}
                             style={{ marginTop: '16px' }}
                         >
@@ -395,7 +418,7 @@ export const EscenaDelCrimen = ({ expedienteIdInicial, folioInicial }: EscenaDel
                         </div>
 
                         <NeonButton
-                            onClick={() => completarPaso2().catch(err => console.error('Error al persistir paso 2:', err))}
+                            onClick={() => solicitarFirmaYCompletarPaso(2, 'Documentación y Evidencia', completarPaso2)}
                             disabled={!canCompletarPaso2 || state.paso2_completado}
                         >
                             {state.paso2_completado ? '✓ Completado' : 'Completar Paso 2'}
@@ -452,18 +475,28 @@ export const EscenaDelCrimen = ({ expedienteIdInicial, folioInicial }: EscenaDel
                                 </div>
                             ))}
 
+                            {!canCompletarPaso3 && (
+                                <p style={{ color: '#ffaa00', fontSize: '12px', marginTop: '8px' }}>
+                                    ⚠ Todos los elementos deben tener hora de recolección registrada.
+                                </p>
+                            )}
                             {state.tipoEscena === 'solo_evidencia' && state.paso2_completado && (
                                 <NeonButton
-                                    onClick={completarPaso3}
+                                    onClick={() => solicitarFirmaYCompletarPaso(3, 'Recolección y Embalaje', completarPaso3)}
                                     disabled={!canCompletarPaso3 || state.paso3_completado}
                                 >
                                     {state.paso3_completado ? '✓ Completado' : 'Finalizar recolección'}
                                 </NeonButton>
                             )}
 
+                            {!canCompletarPaso3 && (
+                                <p style={{ color: '#ffaa00', fontSize: '12px', marginTop: '8px' }}>
+                                    ⚠ Todos los elementos deben tener hora de recolección registrada.
+                                </p>
+                            )}
                             {state.tipoEscena === 'escena_completa' && (
                                 <NeonButton
-                                    onClick={completarPaso3}
+                                    onClick={() => solicitarFirmaYCompletarPaso(3, 'Recolección y Embalaje', completarPaso3)}
                                     disabled={!canCompletarPaso3 || state.paso3_completado}
                                 >
                                     {state.paso3_completado ? '✓ Completado' : 'Completar Paso 3'}
@@ -488,8 +521,8 @@ export const EscenaDelCrimen = ({ expedienteIdInicial, folioInicial }: EscenaDel
                                         disabled={state.paso4_completado}
                                     />
                                     <NeonButton
-                                        onClick={completarPaso4}
-                                        disabled={!canCompletarPaso4}
+                                        onClick={() => solicitarFirmaYCompletarPaso(4, 'Liberación de la Escena', completarPaso4)}
+                                        disabled={!canCompletarPaso4 || state.paso4_completado}
                                     >
                                         Completar Paso 4
                                     </NeonButton>
@@ -532,17 +565,7 @@ export const EscenaDelCrimen = ({ expedienteIdInicial, folioInicial }: EscenaDel
                                         </div>
                                     </div>
                                 </div>
-                                <NeonButton onClick={() => {
-                                    const escenaCompletada = {
-                                        ...state,
-                                        completadoEn: new Date().toLocaleString(),
-                                        id: crypto.randomUUID()
-                                    }
-                                    const historial = JSON.parse(localStorage.getItem('escenas_completadas') || '[]')
-                                    historial.push(escenaCompletada)
-                                    localStorage.setItem('escenas_completadas', JSON.stringify(historial))
-                                    resetEscena()
-                                }}>
+                                <NeonButton onClick={() => resetEscena()}>
                                     + Nueva Escena
                                 </NeonButton>
                             </div>
@@ -590,6 +613,15 @@ export const EscenaDelCrimen = ({ expedienteIdInicial, folioInicial }: EscenaDel
             </div>
             */}
             {renderPasoActual()}
+            {modalFirma?.abierto && (
+                <PinFirmaModal
+                    isOpen={true}
+                    numeroPaso={modalFirma.numeroPaso}
+                    nombrePaso={modalFirma.nombrePaso}
+                    onConfirmar={modalFirma.onConfirmar}
+                    onCancelar={() => setModalFirma(null)}
+                />
+            )}
         </div>
     )
 }
