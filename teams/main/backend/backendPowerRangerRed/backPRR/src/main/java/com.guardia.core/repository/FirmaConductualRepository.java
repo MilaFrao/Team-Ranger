@@ -11,3 +11,4 @@ public interface FirmaConductualRepository extends JpaRepository<FirmaConductual
     List<FirmaConductual> findByExpedienteIdOrderByVersionDesc(Long expedienteId);
     Optional<FirmaConductual> findByExpedienteIdAndVigenteTrue(Long expedienteId);
 }
+//Para el push

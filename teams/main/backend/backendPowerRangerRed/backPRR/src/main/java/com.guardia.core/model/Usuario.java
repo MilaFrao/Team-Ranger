@@ -23,7 +23,7 @@ public class Usuario {
     private Long id;
 
     @OneToMany(mappedBy = "analista")
-    private List<FirmaConductual> firmasRegistradas;
+    private List<FirmaConductual> firmasRegistradas; //Para el push
 
     @Column(nullable = false)
     private String nombre;

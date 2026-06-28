@@ -50,3 +50,4 @@ public class FirmaConductual {
     @JoinColumn(name = "analista_id", nullable = false)
     private Usuario analista;
 }
+//Necesario para el push

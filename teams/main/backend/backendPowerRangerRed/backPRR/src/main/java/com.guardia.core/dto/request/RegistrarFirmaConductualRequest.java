@@ -13,3 +13,4 @@ public class RegistrarFirmaConductualRequest {
     private String comportamientoPostDelictivo;
     private String elementosDistintivos;
 }
+//Para el push

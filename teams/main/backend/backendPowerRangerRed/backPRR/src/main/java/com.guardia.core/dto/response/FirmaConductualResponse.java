@@ -21,3 +21,4 @@ public class FirmaConductualResponse {
     private String comportamientoPostDelictivo;
     private String elementosDistintivos;
 }
+//Para el push

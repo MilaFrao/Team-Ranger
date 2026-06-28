@@ -27,7 +27,7 @@ public class Expediente {
     @OneToMany(mappedBy = "expediente",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
-    private List<FirmaConductual> firmasConductuales;
+    private List<FirmaConductual> firmasConductuales; //Para el push
 
     // Folio visible al usuario
     @Column(unique = true)
