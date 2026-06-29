@@ -226,7 +226,6 @@ public class FirmaConductualServiceImpl implements FirmaConductualService {
 
     /**
      * Valida los campos de la solicitud de registro de firma conductual.
-     * 
      * Verifica que al menos uno de los campos de la firma conductual contenga
      * información válida (no nula ni vacía). Esta validación es obligatoria
      * para evitar registros incompletos sin datos significativos.
