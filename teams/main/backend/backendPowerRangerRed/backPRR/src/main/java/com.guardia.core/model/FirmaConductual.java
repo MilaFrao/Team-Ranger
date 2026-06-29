@@ -49,5 +49,21 @@ public class FirmaConductual {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "analista_id", nullable = false)
     private Usuario analista;
+
+    public boolean tieneContenido() {
+        return !(esVacio(comportamientoPreDelictivo)
+                && esVacio(metodoAproximacion)
+                && esVacio(metodoAtaque)
+                && esVacio(comportamientoPostDelictivo)
+                && esVacio(elementosDistintivos));
+    }
+
+    public void marcarHistorica() {
+        this.vigente = false;
+    }
+
+    private boolean esVacio(String texto) {
+        return texto == null || texto.isBlank();
+    }
 }
 //Necesario para el push
