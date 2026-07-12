@@ -123,3 +123,40 @@ export interface IncidentePayload {
   reporte:          ReportePayload
   fotos:            FotoPayload[]
 }
+
+export type EstadoPropuestaMO =
+    | 'PENDIENTE' | 'APROBADA' | 'CORREGIDA' | 'RECHAZADA' | 'SIN_COINCIDENCIAS'
+
+export interface ExpedienteSimilarDTO {
+  expedienteId: number
+  folio: string
+  similitudPorcentual: number | null
+}
+
+export interface UsuarioDTO {
+  id: number
+  nombre: string
+  identificacion: string
+  correo: string
+}
+
+export interface PropuestaModusOperandiResponseDTO {
+  id: number
+  expedienteId: number | null
+  folioExpediente: string | null
+  version: number
+  vigente: boolean
+  caracteristicasComunes: string | null
+  posibleFirma: string | null
+  consistenciaHorarioZona: string | null
+  resumenGenerado: string | null
+  nivelConfianza: number | null
+  estado: EstadoPropuestaMO
+  expedientesSimilares: ExpedienteSimilarDTO[]
+  revisadoPorExperto: boolean
+  analistaRevisor: UsuarioDTO | null
+  justificacionRevision: string | null
+  fechaGeneracion: string
+  fechaRevision: string | null
+  modusOperandiCatalogadoId: number | null
+}
