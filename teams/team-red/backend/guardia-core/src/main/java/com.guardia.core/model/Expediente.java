@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.*;
 import com.guardia.core.model.enums.EstadoExpediente;
+import org.hibernate.annotations.Array;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "expedientes")
@@ -95,6 +98,14 @@ public class Expediente {
     @ElementCollection
     @CollectionTable(name = "expediente_delitos", joinColumns = @JoinColumn(name = "expediente_id"))
     private List<DelitoEnExpediente> delitos = new ArrayList<>();
+
+    /**
+     * Embedding de descripcionHecho, generado por Spring AI (Componente C, HU2).
+     */
+    @Column(name = "embedding")
+    @JdbcTypeCode(SqlTypes.VECTOR)
+    @Array(length = 1536)
+    private float[] embedding;
 
     // Methods demanded by service implementation
     public boolean validarDatos() {

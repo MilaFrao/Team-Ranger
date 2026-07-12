@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.Comparator;
+import com.guardia.core.event.ExpedienteRegistradoEvent;
 
 @Service
 @RequiredArgsConstructor
@@ -60,8 +61,7 @@ public class ExpedienteServiceImpl implements ExpedienteService {
     private final InvolucradoRepository involucradoRepository;
 
     @Override
-    public ExpedienteResponse crear(ExpedienteRequest request) {
-        // Mapear ubicación
+       // Mapear ubicación
         Localizacion localizacion = new Localizacion();
         if (request.getUbicacion() != null) {
             localizacion.registrarDireccionManual(
@@ -80,8 +80,9 @@ public class ExpedienteServiceImpl implements ExpedienteService {
                         .toString()
                         .substring(0, 8)
                         .toUpperCase();
+        public ExpedienteResponse crear(ExpedienteRequest request) {
 
-        Expediente expediente = new Expediente();
+            Expediente expediente = new Expediente();
 
         expediente.setFolio(folio);
         expediente.setNumeroUnico(folio);
@@ -137,8 +138,6 @@ public class ExpedienteServiceImpl implements ExpedienteService {
                     .add(denunciante);
         }
 
-
-        // Mapear delitos (si vienen)
         // Mapear delitos (si vienen)
         if (request.getDelitos() != null && !request.getDelitos().isEmpty()) {
             request.getDelitos().forEach(dReq -> {
@@ -210,7 +209,9 @@ public class ExpedienteServiceImpl implements ExpedienteService {
             });
         }
 
-        return toResponse(expedienteRepository.save(expediente));
+        Expediente guardado = expedienteRepository.save(expediente);
+        eventPublisher.publishEvent(new ExpedienteRegistradoEvent(this, guardado));
+        return toResponse(guardado);
     }
 
     @Override
