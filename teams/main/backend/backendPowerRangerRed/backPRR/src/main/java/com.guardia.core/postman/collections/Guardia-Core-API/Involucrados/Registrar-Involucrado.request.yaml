@@ -1,0 +1,21 @@
+$kind: http-request
+name: Registrar Involucrado
+method: POST
+url: '{{baseUrl}}/api/v1/involucrados'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "nombre": "Juan",
+      "apellido": "Pérez",
+      "cedula": "12345678",
+      "telefono": "809-555-0001",
+      "nacionalidad": "Dominicana",
+      "direccion": "Calle Principal #1, Santo Domingo",
+      "fotografiaURL": "",
+      "rol": "VICTIMA",
+      "relacionConHecho": "Víctima directa del incidente"
+    }

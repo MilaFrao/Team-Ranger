@@ -1,0 +1,21 @@
+$kind: http-request
+name: Actualizar Involucrado
+method: PUT
+url: '{{baseUrl}}/api/v1/involucrados/{{involucradoId}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "nombre": "Juan",
+      "apellido": "Pérez",
+      "cedula": "12345678",
+      "telefono": "809-555-0002",
+      "nacionalidad": "Dominicana",
+      "direccion": "Calle Actualizada #2, Santo Domingo",
+      "fotografiaURL": "",
+      "rol": "TESTIGO",
+      "relacionConHecho": "Testigo presencial del incidente"
+    }

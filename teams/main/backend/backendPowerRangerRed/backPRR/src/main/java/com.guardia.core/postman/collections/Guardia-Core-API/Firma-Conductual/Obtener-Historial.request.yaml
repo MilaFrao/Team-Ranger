@@ -1,0 +1,4 @@
+$kind: http-request
+name: Obtener Historial de Firma Conductual
+method: GET
+url: '{{baseUrl}}/api/firma-conductual/expediente/{{expedienteId}}/historial'

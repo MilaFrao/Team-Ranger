@@ -1,0 +1,19 @@
+$kind: http-request
+name: Registrar Firma Conductual
+method: POST
+url: '{{baseUrl}}/api/firma-conductual'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "expedienteId": 1,
+      "analistaId": 1,
+      "comportamientoPreDelictivo": "Descripción del comportamiento pre-delictivo",
+      "metodoAproximacion": "Descripción del método de aproximación",
+      "metodoAtaque": "Descripción del método de ataque",
+      "comportamientoPostDelictivo": "Descripción del comportamiento post-delictivo",
+      "elementosDistintivos": "Elementos distintivos observados"
+    }

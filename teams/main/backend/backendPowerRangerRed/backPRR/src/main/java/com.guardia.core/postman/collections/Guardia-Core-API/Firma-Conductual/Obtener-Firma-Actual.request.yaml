@@ -1,0 +1,4 @@
+$kind: http-request
+name: Obtener Firma Conductual Actual
+method: GET
+url: '{{baseUrl}}/api/firma-conductual/expediente/{{expedienteId}}'
