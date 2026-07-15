@@ -1,0 +1,17 @@
+$kind: http-request
+name: Actualizar Firma Conductual
+method: PUT
+url: '{{baseUrl}}/api/firma-conductual/{{firmaConductualId}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "comportamientoPreDelictivo": "Descripción actualizada del comportamiento pre-delictivo",
+      "metodoAproximacion": "Descripción actualizada del método de aproximación",
+      "metodoAtaque": "Descripción actualizada del método de ataque",
+      "comportamientoPostDelictivo": "Descripción actualizada del comportamiento post-delictivo",
+      "elementosDistintivos": "Elementos distintivos actualizados"
+    }
